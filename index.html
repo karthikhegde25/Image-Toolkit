@@ -1,0 +1,2573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Image Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#E7EDF1;
+    --surface:#FFFFFF;
+    --line:#C7D2D9;
+    --ink:#141B22;
+    --muted:#5B6B77;
+    --accent:#FF5A1F;
+    --accent-ink:#7A2600;
+    --accent-soft:#FFE4D6;
+    --ok:#1B7F79;
+    --ok-soft:#DCF1EF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:20px 16px 48px;}
+
+  header{padding:6px 2px 18px;}
+  .eyebrow-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .mark{
+    width:26px;height:26px;background:var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk';font-weight:700;color:#fff;font-size:14px;
+    flex-shrink:0;
+  }
+  h1{
+    font-family:'Space Grotesk';font-weight:700;font-size:22px;
+    margin:0;letter-spacing:-0.01em;
+  }
+  header p{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.5;max-width:38ch;}
+
+  .tabs{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    border:1px solid var(--line);background:var(--surface);
+    margin-bottom:18px;
+  }
+  .tab{
+    padding:11px 4px;text-align:center;font-size:12px;font-weight:600;
+    color:var(--muted);background:transparent;border:none;cursor:pointer;
+    font-family:'Inter';border-right:1px solid var(--line);border-bottom:1px solid var(--line);
+    transition:background .15s ease, color .15s ease;
+  }
+  .tab:nth-child(3n){border-right:none;}
+  .tab:nth-child(7){grid-column:1 / -1;border-right:none;border-bottom:none;}
+  .tab.active{background:var(--accent);color:#fff;}
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);
+    padding:18px 16px;margin-bottom:14px;
+  }
+  .card h2{
+    font-family:'Space Grotesk';font-size:16px;margin:0 0 4px;font-weight:600;
+  }
+  .card .desc{color:var(--muted);font-size:13px;margin:0 0 16px;line-height:1.5;}
+
+  .drop{
+    border:1.5px dashed var(--line);padding:22px 14px;text-align:center;
+    cursor:pointer;background:#F5F8FA;
+  }
+  .drop.has-file{border-color:var(--accent);background:var(--accent-soft);}
+  .drop input{display:none;}
+  .drop .drop-label{font-size:13.5px;color:var(--muted);font-weight:500;}
+  .drop.has-file .drop-label{color:var(--accent-ink);}
+
+  .preview{
+    display:flex;gap:12px;align-items:center;margin-top:14px;
+    padding:10px;border:1px solid var(--line);background:#F5F8FA;
+  }
+  .preview img{
+    width:56px;height:56px;object-fit:cover;flex-shrink:0;
+    border:1px solid var(--line);background:#fff;
+  }
+  .preview .meta{font-size:12.5px;color:var(--muted);line-height:1.6;}
+  .preview .meta strong{color:var(--ink);font-weight:600;}
+
+  label.field-label{
+    display:block;font-size:12.5px;font-weight:600;color:var(--ink);
+    margin:18px 0 8px;
+  }
+
+  select{
+    width:100%;padding:11px 10px;border:1px solid var(--line);
+    background:#fff;font-family:'Inter';font-size:14px;color:var(--ink);
+    appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 18px) center, calc(100% - 13px) center;
+    background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+  }
+
+  input[type=text]{
+    width:100%;padding:11px 10px;border:1px solid var(--line);
+    background:#fff;font-family:'Inter';font-size:14px;color:var(--ink);
+  }
+
+  .number-row{margin-top:4px;display:flex;flex-direction:column;gap:8px;}
+  input[type=number]{
+    width:100%;padding:11px 10px;border:1px solid var(--line);
+    background:#fff;font-family:'Space Grotesk';font-size:16px;font-weight:700;
+    color:var(--accent-ink);
+  }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button{opacity:1;}
+  select.unit-select{width:100%;}
+  .hint-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px;}
+
+  .size-compare{
+    display:flex;gap:10px;margin-top:16px;
+  }
+  .size-box{
+    flex:1;border:1px solid var(--line);padding:10px 12px;background:#F5F8FA;
+  }
+  .size-box .k{font-size:11px;color:var(--muted);font-weight:600;}
+  .size-box .v{font-family:'Space Grotesk';font-size:17px;font-weight:700;margin-top:3px;}
+  .size-box.after .v{color:var(--ok);}
+  .size-box.before .v{color:var(--ink);}
+  .size-box.grow .v{color:var(--accent-ink);}
+
+  button.action{
+    width:100%;padding:13px;margin-top:18px;border:none;
+    background:var(--accent);color:#fff;font-family:'Space Grotesk';
+    font-weight:700;font-size:14.5px;cursor:pointer;letter-spacing:.01em;
+  }
+  button.action:disabled{background:#C7D2D9;color:#8A96A1;cursor:not-allowed;}
+  button.action:active:not(:disabled){opacity:.85;}
+
+  a.download-link{
+    display:none;width:100%;padding:13px;margin-top:10px;
+    background:var(--ok);color:#fff;text-align:center;
+    font-family:'Space Grotesk';font-weight:700;font-size:14.5px;
+    text-decoration:none;
+  }
+  a.download-link.show{display:block;}
+
+  .note{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5;}
+  .status{font-size:12.5px;color:var(--accent-ink);margin-top:10px;font-weight:600;min-height:16px;}
+
+  .checker{
+    background-image:
+      linear-gradient(45deg,#d9d9d9 25%,transparent 25%),
+      linear-gradient(-45deg,#d9d9d9 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#d9d9d9 75%),
+      linear-gradient(-45deg,transparent 75%,#d9d9d9 75%);
+    background-size:16px 16px;
+    background-position:0 0,0 8px,8px -8px,-8px 0px;
+    background-color:#f0f0f0;
+  }
+  .result-preview{
+    display:none;margin-top:16px;border:1px solid var(--line);
+    padding:10px;text-align:center;
+  }
+  .result-preview.show{display:block;}
+  .result-preview img{max-width:100%;max-height:260px;display:block;margin:0 auto;}
+
+  .progress-track{
+    width:100%;height:6px;background:var(--line);margin-top:10px;overflow:hidden;
+    display:none;
+  }
+  .progress-track.show{display:block;}
+  .progress-fill{height:100%;width:0%;background:var(--accent);transition:width .2s ease;}
+
+  .mode-toggle{display:flex;gap:8px;margin-bottom:16px;}
+  .mode-btn{
+    flex:1;padding:10px 6px;font-size:12.5px;font-weight:600;
+    border:1px solid var(--line);background:#fff;color:var(--muted);
+    cursor:pointer;font-family:'Inter';
+  }
+  .mode-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+  .group-label{
+    font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.04em;margin:14px 0 4px;
+  }
+  .meta-row{
+    display:flex;align-items:center;gap:10px;padding:9px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .meta-row:last-child{border-bottom:none;}
+  .meta-row .field-text{flex:1;min-width:0;}
+  .meta-row .field-name{font-size:12.5px;font-weight:600;color:var(--ink);}
+  .meta-row .field-value{font-size:12px;color:var(--muted);word-break:break-word;margin-top:1px;}
+  .meta-row input[type=checkbox]{
+    width:20px;height:20px;flex-shrink:0;accent-color:var(--accent);
+  }
+    display:flex;align-items:center;gap:10px;padding:9px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .multi-item:last-child{border-bottom:none;}
+  .multi-item img{
+    width:40px;height:40px;object-fit:cover;flex-shrink:0;
+    border:1px solid var(--line);background:#fff;
+  }
+  .multi-item .info{flex:1;font-size:12.5px;color:var(--muted);line-height:1.5;min-width:0;}
+  .multi-item .info strong{color:var(--ink);font-weight:600;word-break:break-all;}
+  .multi-item a{
+    font-size:12.5px;font-weight:700;color:var(--accent-ink);
+    text-decoration:none;flex-shrink:0;padding:6px 10px;border:1px solid var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow-row">
+      <div class="mark">IX</div>
+      <h1>Image Toolkit</h1>
+    </div>
+    <p>Convert formats, compress by entering a quality number, or pad a file with extra metadata to increase its size — all on your device, nothing uploaded.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="convert">Convert</button>
+    <button class="tab" data-tab="compress">Compress</button>
+    <button class="tab" data-tab="grow">Increase size</button>
+    <button class="tab" data-tab="strip">Strip metadata</button>
+    <button class="tab" data-tab="watermark">Watermark</button>
+    <button class="tab" data-tab="filters">Filters</button>
+    <button class="tab" data-tab="rotate">Rotate &amp; flip</button>
+  </div>
+
+  <!-- CONVERT -->
+  <div class="panel active" id="panel-convert">
+    <div class="card">
+      <h2>Convert format</h2>
+      <p class="desc">Pick an image, choose the format you want, and download the converted file.</p>
+
+      <div class="mode-toggle">
+        <button type="button" class="mode-btn active" data-group="convert" data-mode="single">Single image</button>
+        <button type="button" class="mode-btn" data-group="convert" data-mode="multi">Multiple images</button>
+      </div>
+
+      <div id="convert-mode-single">
+        <label class="drop" id="drop-convert">
+          <input type="file" accept="image/*" id="file-convert">
+          <div class="drop-label" id="drop-convert-label">Tap to choose an image</div>
+        </label>
+
+        <div class="preview" style="display:none" id="preview-convert">
+          <img id="preview-convert-img">
+          <div class="meta">
+            <div><strong id="preview-convert-name"></strong></div>
+            <div id="preview-convert-info"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="convert-mode-multi" style="display:none">
+        <label class="drop" id="drop-convert-multi">
+          <input type="file" accept="image/*" multiple id="file-convert-multi">
+          <div class="drop-label" id="drop-convert-multi-label">Tap to choose multiple photos</div>
+        </label>
+        <p class="note">Phone cameras can only take one photo per tap — to convert several at once, take your photos first, then select them all here from your gallery.</p>
+        <div id="convert-multi-list"></div>
+      </div>
+
+      <label class="field-label">Convert to</label>
+      <select id="convert-format">
+        <option value="image/png">PNG</option>
+        <option value="image/jpeg">JPG</option>
+        <option value="image/webp">WEBP</option>
+        <option value="image/bmp">BMP</option>
+        <option value="image/x-icon">ICO</option>
+      </select>
+      <p class="note" id="convert-format-note" style="display:none"></p>
+
+      <label class="field-label">Output file name (optional)</label>
+      <input type="text" id="convert-filename" placeholder="Leave blank to keep original names" maxlength="80">
+
+      <button class="action" id="btn-convert" disabled>Convert image</button>
+      <div class="status" id="status-convert"></div>
+      <a class="download-link" id="download-convert">Download converted file</a>
+
+      <div id="convert-multi-results" style="display:none;margin-top:16px;">
+        <div id="convert-multi-result-list"></div>
+        <a class="download-link" id="download-convert-zip">Download all as ZIP</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPRESS -->
+  <div class="panel" id="panel-compress">
+    <div class="card">
+      <h2>Compress</h2>
+      <p class="desc">Slide to set quality. Lower quality means a smaller file. Output is JPG or WEBP, since PNG can't be quality-compressed this way.</p>
+
+      <label class="drop" id="drop-compress">
+        <input type="file" accept="image/*" id="file-compress">
+        <div class="drop-label" id="drop-compress-label">Tap to choose an image</div>
+      </label>
+
+      <div class="preview" style="display:none" id="preview-compress">
+        <img id="preview-compress-img">
+        <div class="meta">
+          <div><strong id="preview-compress-name"></strong></div>
+          <div id="preview-compress-info"></div>
+        </div>
+      </div>
+
+      <label class="field-label">Output format</label>
+      <select id="compress-format">
+        <option value="image/jpeg">JPG</option>
+        <option value="image/webp">WEBP</option>
+      </select>
+
+      <label class="field-label">Quality</label>
+      <div class="number-row">
+        <input type="number" id="compress-slider" min="1" max="100" value="70">
+      </div>
+      <div class="hint-row"><span>1 = smallest file</span><span>100 = highest quality</span></div>
+
+      <div class="size-compare" id="compress-sizes" style="display:none">
+        <div class="size-box before"><div class="k">ORIGINAL</div><div class="v" id="compress-size-before">–</div></div>
+        <div class="size-box after"><div class="k">COMPRESSED</div><div class="v" id="compress-size-after">–</div></div>
+      </div>
+
+      <label class="field-label">Output file name (optional)</label>
+      <input type="text" id="compress-filename" placeholder="Leave blank to keep original name" maxlength="80">
+
+      <button class="action" id="btn-compress" disabled>Compress image</button>
+      <div class="status" id="status-compress"></div>
+      <a class="download-link" id="download-compress">Download compressed file</a>
+    </div>
+  </div>
+
+  <!-- GROW -->
+  <div class="panel" id="panel-grow">
+    <div class="card">
+      <h2>Increase file size</h2>
+      <p class="desc">Writes extra metadata into the file so it takes up more storage space. The image itself isn't changed — this only works on JPG and PNG files.</p>
+
+      <label class="drop" id="drop-grow">
+        <input type="file" accept="image/jpeg,image/png" id="file-grow">
+        <div class="drop-label" id="drop-grow-label">Tap to choose a JPG or PNG</div>
+      </label>
+
+      <div class="preview" style="display:none" id="preview-grow">
+        <img id="preview-grow-img">
+        <div class="meta">
+          <div><strong id="preview-grow-name"></strong></div>
+          <div id="preview-grow-info"></div>
+        </div>
+      </div>
+
+      <label class="field-label">Letters to fill the padding with</label>
+      <input type="text" id="grow-letters" value="A" maxlength="40" placeholder="e.g. A or ABC">
+
+      <label class="field-label">Extra size to add</label>
+      <div class="number-row">
+        <input type="number" id="grow-amount" min="1" value="500">
+        <select id="grow-unit-select" class="unit-select">
+          <option value="KB">KB</option>
+          <option value="MB">MB</option>
+        </select>
+      </div>
+      <div class="hint-row"><span>Minimum 1 KB</span><span>Maximum 50 MB</span></div>
+
+      <div class="size-compare" id="grow-sizes" style="display:none">
+        <div class="size-box before"><div class="k">ORIGINAL</div><div class="v" id="grow-size-before">–</div></div>
+        <div class="size-box grow"><div class="k">NEW SIZE</div><div class="v" id="grow-size-after">–</div></div>
+      </div>
+
+      <label class="field-label">Output file name (optional)</label>
+      <input type="text" id="grow-filename" placeholder="Leave blank to keep original name" maxlength="80">
+
+      <button class="action" id="btn-grow" disabled>Add padding &amp; build file</button>
+      <div class="status" id="status-grow"></div>
+      <a class="download-link" id="download-grow">Download padded file</a>
+      <p class="note">Uses a standard PNG text chunk or JPEG comment segment, so the file still opens normally in any viewer.</p>
+    </div>
+  </div>
+
+  <!-- STRIP METADATA -->
+  <div class="panel" id="panel-strip">
+    <div class="card">
+      <h2>Strip metadata</h2>
+      <p class="desc">Pick a JPG or PNG to see exactly what metadata it contains — camera info, timestamps, GPS location — and choose which fields to remove.</p>
+
+      <label class="drop" id="drop-strip">
+        <input type="file" accept="image/jpeg,image/png,image/webp" id="file-strip">
+        <div class="drop-label" id="drop-strip-label">Tap to choose an image</div>
+      </label>
+
+      <div class="preview" style="display:none" id="preview-strip">
+        <img id="preview-strip-img">
+        <div class="meta">
+          <div><strong id="preview-strip-name"></strong></div>
+          <div id="preview-strip-info"></div>
+        </div>
+      </div>
+
+      <div id="strip-meta-wrap" style="display:none;margin-top:16px;">
+        <div class="hint-row" style="margin-bottom:6px;">
+          <span id="strip-meta-summary">0 fields found</span>
+          <a href="#" id="strip-select-all" style="font-weight:700;color:var(--accent-ink);text-decoration:none;">Select all</a>
+        </div>
+        <div id="strip-meta-list"></div>
+      </div>
+
+      <div class="size-compare" id="strip-sizes" style="display:none">
+        <div class="size-box before"><div class="k">ORIGINAL</div><div class="v" id="strip-size-before">–</div></div>
+        <div class="size-box after"><div class="k">CLEANED</div><div class="v" id="strip-size-after">–</div></div>
+      </div>
+
+      <label class="field-label">Output file name (optional)</label>
+      <input type="text" id="strip-filename" placeholder="Leave blank to keep original name" maxlength="80">
+
+      <button class="action" id="btn-strip" disabled>Remove selected fields</button>
+      <div class="status" id="status-strip"></div>
+      <a class="download-link" id="download-strip">Download clean file</a>
+      <p class="note" id="strip-note-fallback" style="display:none">
+        Prefer to remove everything in one step instead?
+        <a href="#" id="strip-fallback-link" style="font-weight:700;color:var(--accent-ink);text-decoration:none;">Re-encode and wipe all metadata</a>.
+      </p>
+      <p class="note">Field-level removal keeps the original image data untouched and only edits the metadata itself — the safest option. WEBP files support only full re-encoding.</p>
+    </div>
+  </div>
+
+  <!-- WATERMARK -->
+  <div class="panel" id="panel-watermark">
+    <div class="card">
+      <h2>Watermark</h2>
+      <p class="desc">Overlay a text watermark before downloading.</p>
+
+      <div class="mode-toggle">
+        <button type="button" class="mode-btn active" data-group="watermark" data-mode="single">Single image</button>
+        <button type="button" class="mode-btn" data-group="watermark" data-mode="multi">Multiple images</button>
+      </div>
+
+      <div id="watermark-mode-single">
+        <label class="drop" id="drop-watermark">
+          <input type="file" accept="image/*" id="file-watermark">
+          <div class="drop-label" id="drop-watermark-label">Tap to choose an image</div>
+        </label>
+
+        <div class="preview" style="display:none" id="preview-watermark">
+          <img id="preview-watermark-img">
+          <div class="meta">
+            <div><strong id="preview-watermark-name"></strong></div>
+            <div id="preview-watermark-info"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="watermark-mode-multi" style="display:none">
+        <label class="drop" id="drop-watermark-multi">
+          <input type="file" accept="image/*" multiple id="file-watermark-multi">
+          <div class="drop-label" id="drop-watermark-multi-label">Tap to choose multiple photos</div>
+        </label>
+        <p class="note">Take your photos first, then select them all here — the same watermark is applied to each one.</p>
+        <div id="watermark-multi-list"></div>
+      </div>
+
+      <label class="field-label">Watermark text</label>
+      <input type="text" id="watermark-text" maxlength="60" placeholder="e.g. © Your Name" value="© Your Name">
+
+      <label class="field-label">Position</label>
+      <div class="number-row">
+        <select id="watermark-position">
+          <option value="bottom-right">Bottom right</option>
+          <option value="bottom-left">Bottom left</option>
+          <option value="top-right">Top right</option>
+          <option value="top-left">Top left</option>
+          <option value="center">Center</option>
+        </select>
+      </div>
+
+      <label class="field-label">Font size (px)</label>
+      <div class="number-row">
+        <input type="number" id="watermark-size" min="8" max="400" value="32">
+      </div>
+
+      <label class="field-label">Opacity (%)</label>
+      <div class="number-row">
+        <input type="number" id="watermark-opacity" min="5" max="100" value="60">
+      </div>
+
+      <label class="field-label">Output format</label>
+      <div class="number-row">
+        <select id="watermark-format">
+          <option value="image/png">PNG</option>
+          <option value="image/jpeg">JPG</option>
+          <option value="image/webp">WEBP</option>
+        </select>
+      </div>
+
+      <label class="field-label">Output file name (optional)</label>
+      <input type="text" id="watermark-filename" placeholder="Leave blank to keep original names" maxlength="80">
+
+      <button class="action" id="btn-watermark" disabled>Add watermark</button>
+      <div class="status" id="status-watermark"></div>
+      <div class="result-preview checker" id="result-watermark"><img id="result-watermark-img"></div>
+      <a class="download-link" id="download-watermark">Download watermarked file</a>
+
+      <div id="watermark-multi-results" style="display:none;margin-top:16px;">
+        <div id="watermark-multi-result-list"></div>
+        <a class="download-link" id="download-watermark-zip">Download all as ZIP</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- BASIC FILTERS -->
+  <div class="panel" id="panel-filters">
+    <div class="card">
+      <h2>Basic filters</h2>
+      <p class="desc">Apply a color effect, plus brightness and contrast adjustments.</p>
+
+      <div class="mode-toggle">
+        <button type="button" class="mode-btn active" data-group="filters" data-mode="single">Single image</button>
+        <button type="button" class="mode-btn" data-group="filters" data-mode="multi">Multiple images</button>
+      </div>
+
+      <div id="filters-mode-single">
+        <label class="drop" id="drop-filters">
+          <input type="file" accept="image/*" id="file-filters">
+          <div class="drop-label" id="drop-filters-label">Tap to choose an image</div>
+        </label>
+
+        <div class="preview" style="display:none" id="preview-filters">
+          <img id="preview-filters-img">
+          <div class="meta">
+            <div><strong id="preview-filters-name"></strong></div>
+            <div id="preview-filters-info"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="filters-mode-multi" style="display:none">
+        <label class="drop" id="drop-filters-multi">
+          <input type="file" accept="image/*" multiple id="file-filters-multi">
+          <div class="drop-label" id="drop-filters-multi-label">Tap to choose multiple photos</div>
+        </label>
+        <p class="note">Take your photos first, then select them all here — the same effect is applied to each one.</p>
+        <div id="filters-multi-list"></div>
+      </div>
+
+      <label class="field-label">Effect</label>
+      <div class="number-row">
+        <select id="filter-effect">
+          <option value="none">None</option>
+          <option value="grayscale">Grayscale</option>
+          <option value="sepia">Sepia</option>
+          <option value="invert">Invert</option>
+          <option value="vintage">Vintage</option>
+          <option value="warm">Warm tone</option>
+          <option value="cool">Cool tone</option>
+          <option value="posterize">Posterize</option>
+          <option value="threshold">Threshold (black &amp; white)</option>
+          <option value="vignette">Vignette</option>
+          <option value="blur">Blur</option>
+          <option value="sharpen">Sharpen</option>
+        </select>
+      </div>
+
+      <label class="field-label">Brightness (-100 to 100)</label>
+      <div class="number-row">
+        <input type="number" id="filter-brightness" min="-100" max="100" value="0">
+      </div>
+
+      <label class="field-label">Contrast (-100 to 100)</label>
+      <div class="number-row">
+        <input type="number" id="filter-contrast" min="-100" max="100" value="0">
+      </div>
+
+      <label class="field-label">Output format</label>
+      <div class="number-row">
+        <select id="filter-format">
+          <option value="image/png">PNG</option>
+          <option value="image/jpeg">JPG</option>
+          <option value="image/webp">WEBP</option>
+        </select>
+      </div>
+
+      <label class="field-label">Output file name (optional)</label>
+      <input type="text" id="filters-filename" placeholder="Leave blank to keep original names" maxlength="80">
+
+      <button class="action" id="btn-filters" disabled>Apply filters</button>
+      <div class="status" id="status-filters"></div>
+      <div class="result-preview checker" id="result-filters"><img id="result-filters-img"></div>
+      <a class="download-link" id="download-filters">Download filtered file</a>
+
+      <div id="filters-multi-results" style="display:none;margin-top:16px;">
+        <div id="filters-multi-result-list"></div>
+        <a class="download-link" id="download-filters-zip">Download all as ZIP</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROTATE & FLIP -->
+  <div class="panel" id="panel-rotate">
+    <div class="card">
+      <h2>Rotate &amp; flip</h2>
+      <p class="desc">Rotate by 90°, 180°, or 270°, and mirror horizontally or vertically. Works on one image or a whole batch.</p>
+
+      <div class="mode-toggle">
+        <button type="button" class="mode-btn active" data-group="rotate" data-mode="single">Single image</button>
+        <button type="button" class="mode-btn" data-group="rotate" data-mode="multi">Multiple images</button>
+      </div>
+
+      <div id="rotate-mode-single">
+        <label class="drop" id="drop-rotate">
+          <input type="file" accept="image/*" id="file-rotate">
+          <div class="drop-label" id="drop-rotate-label">Tap to choose an image</div>
+        </label>
+
+        <div class="preview" style="display:none" id="preview-rotate">
+          <img id="preview-rotate-img">
+          <div class="meta">
+            <div><strong id="preview-rotate-name"></strong></div>
+            <div id="preview-rotate-info"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="rotate-mode-multi" style="display:none">
+        <label class="drop" id="drop-rotate-multi">
+          <input type="file" accept="image/*" multiple id="file-rotate-multi">
+          <div class="drop-label" id="drop-rotate-multi-label">Tap to choose multiple photos</div>
+        </label>
+        <p class="note">Phone cameras can only take one photo per tap — to process several at once, take your photos first, then select them all here from your gallery.</p>
+        <div id="rotate-multi-list"></div>
+      </div>
+
+      <label class="field-label">Rotate</label>
+      <div class="number-row">
+        <select id="rotate-angle">
+          <option value="0">No rotation</option>
+          <option value="90">90° clockwise</option>
+          <option value="180">180°</option>
+          <option value="270">270° clockwise</option>
+        </select>
+      </div>
+
+      <label class="field-label">Mirror</label>
+      <div class="number-row">
+        <select id="rotate-mirror">
+          <option value="none">No mirroring</option>
+          <option value="h">Flip horizontal</option>
+          <option value="v">Flip vertical</option>
+          <option value="both">Flip both</option>
+        </select>
+      </div>
+
+      <label class="field-label">Output format</label>
+      <div class="number-row">
+        <select id="rotate-format">
+          <option value="image/png">PNG</option>
+          <option value="image/jpeg">JPG</option>
+          <option value="image/webp">WEBP</option>
+        </select>
+      </div>
+
+      <label class="field-label">Output file name (optional)</label>
+      <input type="text" id="rotate-filename" placeholder="Leave blank to keep original names" maxlength="80">
+
+      <button class="action" id="btn-rotate" disabled>Apply</button>
+      <div class="status" id="status-rotate"></div>
+      <a class="download-link" id="download-rotate">Download result</a>
+
+      <div id="rotate-multi-results" style="display:none;margin-top:16px;">
+        <div id="rotate-multi-result-list"></div>
+        <a class="download-link" id="download-rotate-zip">Download all as ZIP</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ---------- tab switching ---------- */
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+function fmtBytes(b){
+  if(b < 1024) return b + ' B';
+  if(b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/(1024*1024)).toFixed(2) + ' MB';
+}
+
+// Strip characters that aren't safe in filenames, and drop any extension the user typed
+function sanitizeBaseName(name){
+  return (name || '')
+    .replace(/[\\/:*?"<>|]/g, '')
+    .replace(/\.[a-zA-Z0-9]{1,5}$/, '')
+    .trim();
+}
+
+// Build the final filename for a single-file download.
+// If the user typed a custom name, it's used as-is (no auto suffix).
+// Otherwise falls back to originalBase + suffix.
+function outputFileName(customName, originalBase, suffix, ext){
+  const clean = sanitizeBaseName(customName);
+  const base = clean || (originalBase + suffix);
+  return base + '.' + ext;
+}
+
+// Build the filename for one item inside a batch. If the user typed a custom
+// name, each file becomes "<name>-<index>.ext"; otherwise keeps its own name.
+function outputBatchFileName(customName, originalBase, index, suffix, ext){
+  const clean = sanitizeBaseName(customName);
+  const base = clean ? (clean + '-' + index) : (originalBase + suffix);
+  return base + '.' + ext;
+}
+
+// Build the ZIP archive's filename
+function outputZipName(customName, fallback){
+  const clean = sanitizeBaseName(customName).replace(/\.zip$/i, '');
+  return (clean || fallback) + '.zip';
+}
+
+function loadImageFromFile(file){
+  return new Promise((resolve,reject)=>{
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = ()=> resolve({img, url});
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function setupPreview(prefix, file, imgEl){
+  document.getElementById('preview-'+prefix).style.display='flex';
+  document.getElementById('preview-'+prefix+'-img').src = imgEl.src;
+  document.getElementById('preview-'+prefix+'-name').textContent = file.name;
+  document.getElementById('preview-'+prefix+'-info').textContent = fmtBytes(file.size) + ' · ' + (file.type || 'unknown type');
+}
+
+/* =========================================================
+   CONVERT
+   ========================================================= */
+let convertState = null;
+let convertMultiState = null;
+let convertMode = 'single';
+
+document.querySelectorAll('.mode-btn[data-group="convert"]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.mode-btn[data-group="convert"]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    convertMode = btn.dataset.mode;
+
+    document.getElementById('convert-mode-single').style.display = convertMode === 'single' ? 'block' : 'none';
+    document.getElementById('convert-mode-multi').style.display = convertMode === 'multi' ? 'block' : 'none';
+    document.getElementById('btn-convert').textContent = convertMode === 'single' ? 'Convert image' : 'Convert images';
+    document.getElementById('btn-convert').disabled = convertMode === 'single'
+      ? !convertState
+      : !(convertMultiState && convertMultiState.length);
+
+    document.getElementById('download-convert').classList.remove('show');
+    document.getElementById('convert-multi-results').style.display = 'none';
+    document.getElementById('status-convert').textContent = '';
+  });
+});
+
+document.getElementById('convert-format').addEventListener('change', (e)=>{
+  const note = document.getElementById('convert-format-note');
+  if(e.target.value === 'image/x-icon'){
+    note.style.display = 'block';
+    note.textContent = 'ICO files are capped at 256×256 — larger images are scaled down to fit.';
+  } else {
+    note.style.display = 'none';
+  }
+});
+
+document.getElementById('file-convert').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const {img,url} = await loadImageFromFile(file);
+  convertState = {file, img};
+  document.getElementById('drop-convert').classList.add('has-file');
+  document.getElementById('drop-convert-label').textContent = 'Change image';
+  setupPreview('convert', file, img);
+  document.getElementById('btn-convert').disabled = false;
+  document.getElementById('download-convert').classList.remove('show');
+  document.getElementById('status-convert').textContent = '';
+});
+
+const MAX_MULTI_FILES = 30;
+
+document.getElementById('file-convert-multi').addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files || []);
+  if(!files.length) return;
+  const limited = files.slice(0, MAX_MULTI_FILES);
+
+  const loaded = await Promise.all(limited.map(async (f)=>{
+    const {img} = await loadImageFromFile(f);
+    return {file: f, img};
+  }));
+  convertMultiState = loaded;
+
+  document.getElementById('drop-convert-multi').classList.add('has-file');
+  document.getElementById('drop-convert-multi-label').textContent =
+    loaded.length + ' photo' + (loaded.length > 1 ? 's' : '') + ' selected — tap to change';
+
+  const listEl = document.getElementById('convert-multi-list');
+  listEl.innerHTML = '';
+  loaded.forEach(({file, img})=>{
+    const row = document.createElement('div');
+    row.className = 'multi-item';
+    const thumb = document.createElement('img');
+    thumb.src = img.src;
+    const info = document.createElement('div');
+    info.className = 'info';
+    info.innerHTML = '<strong>' + file.name + '</strong><br>' + fmtBytes(file.size);
+    row.appendChild(thumb);
+    row.appendChild(info);
+    listEl.appendChild(row);
+  });
+
+  document.getElementById('btn-convert').disabled = false;
+  document.getElementById('convert-multi-results').style.display = 'none';
+  document.getElementById('download-convert-zip').classList.remove('show');
+  document.getElementById('status-convert').textContent = files.length > MAX_MULTI_FILES
+    ? ('Only the first ' + MAX_MULTI_FILES + ' photos were loaded.')
+    : '';
+});
+
+// Encode a canvas's pixels as an uncompressed 24-bit BMP
+function encodeBMP(canvas){
+  const w = canvas.width, h = canvas.height;
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(0,0,w,h).data;
+
+  const rowSize = Math.floor((24*w + 31)/32) * 4; // padded to 4-byte boundary
+  const pixelArraySize = rowSize * h;
+  const fileSize = 54 + pixelArraySize;
+
+  const buf = new ArrayBuffer(fileSize);
+  const view = new DataView(buf);
+
+  // BITMAPFILEHEADER
+  view.setUint8(0, 0x42); view.setUint8(1, 0x4D); // 'BM'
+  view.setUint32(2, fileSize, true);
+  view.setUint32(6, 0, true);
+  view.setUint32(10, 54, true); // pixel data offset
+
+  // BITMAPINFOHEADER
+  view.setUint32(14, 40, true);
+  view.setInt32(18, w, true);
+  view.setInt32(22, h, true); // positive = bottom-up
+  view.setUint16(26, 1, true); // planes
+  view.setUint16(28, 24, true); // bits per pixel
+  view.setUint32(30, 0, true); // no compression
+  view.setUint32(34, pixelArraySize, true);
+  view.setInt32(38, 2835, true);
+  view.setInt32(42, 2835, true);
+  view.setUint32(46, 0, true);
+  view.setUint32(50, 0, true);
+
+  let offset = 54;
+  for(let y = h-1; y >= 0; y--){
+    for(let x = 0; x < w; x++){
+      const i = (y*w + x) * 4;
+      const r = imgData[i], g = imgData[i+1], b = imgData[i+2];
+      view.setUint8(offset++, b);
+      view.setUint8(offset++, g);
+      view.setUint8(offset++, r);
+    }
+    // row padding to the next 4-byte boundary
+    const rowBytesWritten = w*3;
+    const padBytes = rowSize - rowBytesWritten;
+    for(let p=0;p<padBytes;p++){ view.setUint8(offset++, 0); }
+  }
+
+  return new Blob([buf], {type:'image/bmp'});
+}
+
+// Wrap a PNG blob's bytes in a minimal single-image ICO container
+async function encodeICO(canvas){
+  const MAX = 256;
+  let srcCanvas = canvas;
+  if(canvas.width > MAX || canvas.height > MAX){
+    const scale = Math.min(MAX/canvas.width, MAX/canvas.height);
+    const w = Math.max(1, Math.round(canvas.width*scale));
+    const h = Math.max(1, Math.round(canvas.height*scale));
+    const resized = document.createElement('canvas');
+    resized.width = w; resized.height = h;
+    resized.getContext('2d').drawImage(canvas, 0, 0, w, h);
+    srcCanvas = resized;
+  }
+
+  const pngBlob = await new Promise(res => srcCanvas.toBlob(res, 'image/png'));
+  const pngBytes = new Uint8Array(await pngBlob.arrayBuffer());
+
+  const w = srcCanvas.width, h = srcCanvas.height;
+  const header = new Uint8Array(6 + 16);
+  const dv = new DataView(header.buffer);
+  dv.setUint16(0, 0, true);       // reserved
+  dv.setUint16(2, 1, true);       // type = icon
+  dv.setUint16(4, 1, true);       // image count
+
+  dv.setUint8(6, w >= 256 ? 0 : w);
+  dv.setUint8(7, h >= 256 ? 0 : h);
+  dv.setUint8(8, 0);              // color palette
+  dv.setUint8(9, 0);              // reserved
+  dv.setUint16(10, 1, true);      // color planes
+  dv.setUint16(12, 32, true);     // bits per pixel
+  dv.setUint32(14, pngBytes.length, true); // size of image data
+  dv.setUint32(18, 22, true);     // offset to image data
+
+  return new Blob([header, pngBytes], {type:'image/x-icon'});
+}
+
+// Shared encoder: turns a finished canvas into a Blob in the requested format.
+// Used by Convert (single + batch) and Rotate & Flip (single + batch).
+async function encodeCanvasToBlob(canvas, targetType){
+  if(targetType === 'image/png' || targetType === 'image/jpeg' || targetType === 'image/webp'){
+    return await new Promise(res => canvas.toBlob(res, targetType, 0.92));
+  } else if(targetType === 'image/bmp'){
+    return encodeBMP(canvas);
+  } else if(targetType === 'image/x-icon'){
+    return await encodeICO(canvas);
+  }
+  return null;
+}
+
+// Encode one loaded <img> to a Blob in the requested format (shared by single + batch convert)
+async function convertOneImageToBlob(img, targetType){
+  const w = img.naturalWidth, h = img.naturalHeight;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if(targetType === 'image/jpeg' || targetType === 'image/bmp'){
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  ctx.drawImage(img, 0, 0);
+  return await encodeCanvasToBlob(canvas, targetType);
+}
+
+function extForType(targetType){
+  const ext = targetType.split('/')[1];
+  if(ext === 'jpeg') return 'jpg';
+  if(targetType === 'image/x-icon') return 'ico';
+  return ext;
+}
+
+// Encode one loaded <img> with rotation and/or mirroring applied (used by Rotate & Flip)
+async function transformImageToBlob(img, targetType, rotation, flipH, flipV){
+  rotation = rotation || 0;
+  const w = img.naturalWidth, h = img.naturalHeight;
+  const swap = (rotation === 90 || rotation === 270);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = swap ? h : w;
+  canvas.height = swap ? w : h;
+  const ctx = canvas.getContext('2d');
+
+  if(targetType === 'image/jpeg' || targetType === 'image/bmp'){
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+
+  if(rotation === 90){ ctx.translate(canvas.width, 0); ctx.rotate(Math.PI/2); }
+  else if(rotation === 180){ ctx.translate(canvas.width, canvas.height); ctx.rotate(Math.PI); }
+  else if(rotation === 270){ ctx.translate(0, canvas.height); ctx.rotate(3*Math.PI/2); }
+
+  if(flipH){ ctx.translate(w, 0); ctx.scale(-1, 1); }
+  if(flipV){ ctx.translate(0, h); ctx.scale(1, -1); }
+
+  ctx.drawImage(img, 0, 0, w, h);
+  return await encodeCanvasToBlob(canvas, targetType);
+}
+
+// Build an uncompressed (store-method) ZIP so many converted files can download as one archive
+function buildZip(entries){
+  const encoder = new TextEncoder();
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+
+  entries.forEach(entry => {
+    const nameBytes = encoder.encode(entry.name);
+    const data = entry.data;
+    const crc = crc32(data);
+    const size = data.length;
+
+    const localHeader = new Uint8Array(30 + nameBytes.length);
+    const lv = new DataView(localHeader.buffer);
+    lv.setUint32(0, 0x04034b50, true);
+    lv.setUint16(4, 20, true);
+    lv.setUint16(6, 0, true);
+    lv.setUint16(8, 0, true);
+    lv.setUint16(10, 0, true);
+    lv.setUint16(12, 0, true);
+    lv.setUint32(14, crc, true);
+    lv.setUint32(18, size, true);
+    lv.setUint32(22, size, true);
+    lv.setUint16(26, nameBytes.length, true);
+    lv.setUint16(28, 0, true);
+    localHeader.set(nameBytes, 30);
+
+    const localHeaderOffset = offset;
+    localParts.push(localHeader, data);
+    offset += localHeader.length + data.length;
+
+    const centralHeader = new Uint8Array(46 + nameBytes.length);
+    const cv = new DataView(centralHeader.buffer);
+    cv.setUint32(0, 0x02014b50, true);
+    cv.setUint16(4, 20, true);
+    cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0, true);
+    cv.setUint16(10, 0, true);
+    cv.setUint16(12, 0, true);
+    cv.setUint16(14, 0, true);
+    cv.setUint32(16, crc, true);
+    cv.setUint32(20, size, true);
+    cv.setUint32(24, size, true);
+    cv.setUint16(28, nameBytes.length, true);
+    cv.setUint16(30, 0, true);
+    cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true);
+    cv.setUint16(36, 0, true);
+    cv.setUint32(38, 0, true);
+    cv.setUint32(42, localHeaderOffset, true);
+    centralHeader.set(nameBytes, 46);
+    centralParts.push(centralHeader);
+  });
+
+  const centralSize = centralParts.reduce((s,p)=>s+p.length, 0);
+  const centralOffset = offset;
+
+  const end = new Uint8Array(22);
+  const ev = new DataView(end.buffer);
+  ev.setUint32(0, 0x06054b50, true);
+  ev.setUint16(8, entries.length, true);
+  ev.setUint16(10, entries.length, true);
+  ev.setUint32(12, centralSize, true);
+  ev.setUint32(16, centralOffset, true);
+
+  return new Blob([...localParts, ...centralParts, end], {type:'application/zip'});
+}
+
+document.getElementById('btn-convert').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('status-convert');
+  const targetType = document.getElementById('convert-format').value;
+  const ext = extForType(targetType);
+  const customName = document.getElementById('convert-filename').value;
+
+  if(convertMode === 'multi'){
+    if(!convertMultiState || !convertMultiState.length) return;
+    statusEl.textContent = 'Converting ' + convertMultiState.length + ' photos…';
+    document.getElementById('btn-convert').disabled = true;
+
+    const results = [];
+    for(let i=0;i<convertMultiState.length;i++){
+      const { file, img } = convertMultiState[i];
+      try{
+        const blob = await convertOneImageToBlob(img, targetType);
+        if(blob){
+          const baseName = file.name.replace(/\.[^.]+$/,'');
+          const name = outputBatchFileName(customName, baseName, i+1, '', ext);
+          results.push({name, blob});
+        }
+      }catch(err){ /* skip this file, keep going */ }
+    }
+
+    const listEl = document.getElementById('convert-multi-result-list');
+    listEl.innerHTML = '';
+    results.forEach(r=>{
+      const url = URL.createObjectURL(r.blob);
+      const row = document.createElement('div');
+      row.className = 'multi-item';
+      const info = document.createElement('div');
+      info.className = 'info';
+      info.innerHTML = '<strong>' + r.name + '</strong><br>' + fmtBytes(r.blob.size);
+      const a = document.createElement('a');
+      a.href = url; a.download = r.name; a.textContent = 'Download';
+      row.appendChild(info);
+      row.appendChild(a);
+      listEl.appendChild(row);
+    });
+    document.getElementById('convert-multi-results').style.display = 'block';
+
+    if(results.length){
+      const entries = await Promise.all(results.map(async r => ({
+        name: r.name,
+        data: new Uint8Array(await r.blob.arrayBuffer())
+      })));
+      const zipBlob = buildZip(entries);
+      const zipLink = document.getElementById('download-convert-zip');
+      zipLink.href = URL.createObjectURL(zipBlob);
+      zipLink.download = outputZipName(customName, 'converted-images');
+      zipLink.classList.add('show');
+      zipLink.textContent = 'Download all as ZIP (' + fmtBytes(zipBlob.size) + ')';
+    }
+
+    statusEl.textContent = 'Done — converted ' + results.length + ' of ' + convertMultiState.length + ' photos.';
+    document.getElementById('btn-convert').disabled = false;
+    return;
+  }
+
+  // ---- single image mode ----
+  if(!convertState) return;
+  statusEl.textContent = 'Converting…';
+  const { img, file } = convertState;
+  const baseName = file.name.replace(/\.[^.]+$/,'');
+  const blob = await convertOneImageToBlob(img, targetType);
+  if(!blob){ statusEl.textContent = 'Conversion failed — try a different image.'; return; }
+  const url = URL.createObjectURL(blob);
+  const link = document.getElementById('download-convert');
+  link.href = url;
+  link.download = outputFileName(customName, baseName, '', ext);
+  link.classList.add('show');
+  link.textContent = 'Download ' + link.download + ' (' + fmtBytes(blob.size) + ')';
+  statusEl.textContent = 'Done.';
+});
+
+/* =========================================================
+   COMPRESS
+   ========================================================= */
+let compressState = null;
+
+document.getElementById('file-compress').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const {img,url} = await loadImageFromFile(file);
+  compressState = {file, img};
+  document.getElementById('drop-compress').classList.add('has-file');
+  document.getElementById('drop-compress-label').textContent = 'Change image';
+  setupPreview('compress', file, img);
+  document.getElementById('btn-compress').disabled = false;
+  document.getElementById('download-compress').classList.remove('show');
+  document.getElementById('status-compress').textContent = '';
+  document.getElementById('compress-sizes').style.display = 'flex';
+  document.getElementById('compress-size-before').textContent = fmtBytes(file.size);
+  document.getElementById('compress-size-after').textContent = '–';
+});
+
+document.getElementById('btn-compress').addEventListener('click', ()=>{
+  if(!compressState) return;
+  const statusEl = document.getElementById('status-compress');
+  statusEl.textContent = 'Compressing…';
+
+  const quality = Math.min(100, Math.max(1, parseInt(document.getElementById('compress-slider').value,10) || 70)) / 100;
+  const targetType = document.getElementById('compress-format').value;
+  const {img, file} = compressState;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.drawImage(img,0,0);
+
+  canvas.toBlob((blob)=>{
+    if(!blob){ statusEl.textContent = 'Compression failed — try a different image.'; return; }
+    const ext = targetType === 'image/webp' ? 'webp' : 'jpg';
+    const baseName = file.name.replace(/\.[^.]+$/,'');
+    const url = URL.createObjectURL(blob);
+    const link = document.getElementById('download-compress');
+    link.href = url;
+    link.download = outputFileName(document.getElementById('compress-filename').value, baseName, '-compressed', ext);
+    link.classList.add('show');
+    link.textContent = 'Download ' + link.download + ' (' + fmtBytes(blob.size) + ')';
+    document.getElementById('compress-size-after').textContent = fmtBytes(blob.size);
+    const pct = Math.round((1 - blob.size/file.size) * 100);
+    statusEl.textContent = pct > 0 ? ('Done — ' + pct + '% smaller.') : 'Done.';
+  }, targetType, quality);
+});
+
+/* =========================================================
+   INCREASE SIZE (metadata padding)
+   ========================================================= */
+let growState = null;
+
+function currentGrowBytes(){
+  const amount = parseFloat(document.getElementById('grow-amount').value) || 0;
+  const unit = document.getElementById('grow-unit-select').value;
+  const bytes = unit === 'MB' ? amount * 1024 * 1024 : amount * 1024;
+  return Math.max(0, Math.min(bytes, 50 * 1024 * 1024)); // hard cap at 50 MB
+}
+
+document.getElementById('file-grow').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.type !== 'image/jpeg' && file.type !== 'image/png'){
+    document.getElementById('status-grow').textContent = 'Please choose a JPG or PNG file.';
+    return;
+  }
+  const {img,url} = await loadImageFromFile(file);
+  growState = {file, img};
+  document.getElementById('drop-grow').classList.add('has-file');
+  document.getElementById('drop-grow-label').textContent = 'Change image';
+  setupPreview('grow', file, img);
+  document.getElementById('btn-grow').disabled = false;
+  document.getElementById('download-grow').classList.remove('show');
+  document.getElementById('status-grow').textContent = '';
+  document.getElementById('grow-sizes').style.display = 'flex';
+  document.getElementById('grow-size-before').textContent = fmtBytes(file.size);
+  document.getElementById('grow-size-after').textContent = '–';
+});
+
+// Build a Uint8Array of the requested length by repeating the given text.
+// Uses a doubling-copy strategy so it stays fast even at tens of megabytes.
+function buildPadding(text, length){
+  const clean = (text && text.length) ? text : 'A';
+  const seed = new TextEncoder().encode(clean);
+  const out = new Uint8Array(length);
+  const initial = Math.min(seed.length, length);
+  out.set(seed.subarray(0, initial), 0);
+  let filled = initial;
+  while(filled < length){
+    const copyLen = Math.min(filled, length - filled);
+    out.set(out.subarray(0, copyLen), filled);
+    filled += copyLen;
+  }
+  return out;
+}
+
+// ---- CRC32 for PNG chunks ----
+const CRC_TABLE = (()=>{
+  const t = new Uint32Array(256);
+  for(let n=0;n<256;n++){
+    let c = n;
+    for(let k=0;k<8;k++){
+      c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    }
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(bytes){
+  let c = 0xFFFFFFFF;
+  for(let i=0;i<bytes.length;i++){
+    c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  }
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function u32be(n){
+  return new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255]);
+}
+function concatBytes(arrays){
+  let total = 0;
+  arrays.forEach(a=>total+=a.length);
+  const out = new Uint8Array(total);
+  let off = 0;
+  arrays.forEach(a=>{ out.set(a, off); off += a.length; });
+  return out;
+}
+
+function padPNG(bytes, extraLength, letters){
+  // PNG chunks max ~500KB each of text data, split into multiple tEXt chunks
+  const CHUNK_CAP = 500000;
+  const chunks = [];
+  let remaining = extraLength;
+  let idx = 0;
+  while(remaining > 0){
+    const size = Math.min(CHUNK_CAP, remaining);
+    const keyword = new TextEncoder().encode('Comment' + (idx>0? idx : ''));
+    const data = concatBytes([keyword, new Uint8Array([0]), buildPadding(letters, size)]);
+    const typeBytes = new TextEncoder().encode('tEXt');
+    const crcInput = concatBytes([typeBytes, data]);
+    const crc = crc32(crcInput);
+    const chunk = concatBytes([u32be(data.length), typeBytes, data, u32be(crc)]);
+    chunks.push(chunk);
+    remaining -= size;
+    idx++;
+  }
+
+  // find IEND chunk offset: scan chunks from byte 8
+  let offset = 8;
+  let iendOffset = bytes.length;
+  while(offset < bytes.length){
+    const len = (bytes[offset]<<24 | bytes[offset+1]<<16 | bytes[offset+2]<<8 | bytes[offset+3]) >>> 0;
+    const type = String.fromCharCode(bytes[offset+4],bytes[offset+5],bytes[offset+6],bytes[offset+7]);
+    const chunkTotal = 8 + len + 4;
+    if(type === 'IEND'){ iendOffset = offset; break; }
+    offset += chunkTotal;
+  }
+
+  const before = bytes.slice(0, iendOffset);
+  const after = bytes.slice(iendOffset);
+  return concatBytes([before, ...chunks, after]);
+}
+
+function padJPEG(bytes, extraLength, letters){
+  // Insert COM segments (marker 0xFFFE) right after SOI (0xFFD8)
+  const SEG_CAP = 65000; // stay under 65533 max, leave room
+  const segments = [];
+  let remaining = extraLength;
+  while(remaining > 0){
+    const size = Math.min(SEG_CAP, remaining);
+    const data = buildPadding(letters, size);
+    const segLen = data.length + 2; // includes the 2 length bytes
+    const seg = concatBytes([
+      new Uint8Array([0xFF,0xFE]),
+      new Uint8Array([(segLen>>8)&255, segLen&255]),
+      data
+    ]);
+    segments.push(seg);
+    remaining -= size;
+  }
+  const soi = bytes.slice(0,2);
+  const rest = bytes.slice(2);
+  return concatBytes([soi, ...segments, rest]);
+}
+
+document.getElementById('btn-grow').addEventListener('click', async ()=>{
+  if(!growState) return;
+  const statusEl = document.getElementById('status-grow');
+  statusEl.textContent = 'Building padded file…';
+
+  const { file } = growState;
+  const letters = document.getElementById('grow-letters').value || 'A';
+  const extraBytes = Math.round(currentGrowBytes());
+
+  if(extraBytes < 1){
+    statusEl.textContent = 'Enter an amount greater than 0.';
+    return;
+  }
+
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+
+  let outBytes;
+  try{
+    if(file.type === 'image/png'){
+      outBytes = padPNG(bytes, extraBytes, letters);
+    } else {
+      outBytes = padJPEG(bytes, extraBytes, letters);
+    }
+  }catch(err){
+    statusEl.textContent = 'Something went wrong building the file.';
+    return;
+  }
+
+  const blob = new Blob([outBytes], {type:file.type});
+  const url = URL.createObjectURL(blob);
+  const baseName = file.name.replace(/\.[^.]+$/,'');
+  const ext = file.type === 'image/png' ? 'png' : 'jpg';
+  const link = document.getElementById('download-grow');
+  link.href = url;
+  link.download = outputFileName(document.getElementById('grow-filename').value, baseName, '-padded', ext);
+  link.classList.add('show');
+  link.textContent = 'Download ' + link.download + ' (' + fmtBytes(blob.size) + ')';
+  document.getElementById('grow-size-after').textContent = fmtBytes(blob.size);
+  statusEl.textContent = 'Done — added ' + fmtBytes(extraBytes) + '.';
+});
+
+/* =========================================================
+   STRIP METADATA
+   Parses real EXIF tags (JPEG) and metadata chunks (PNG) so
+   each field can be listed and removed individually, rebuilding
+   the file with only the selected fields taken out.
+   ========================================================= */
+let stripState = null;
+let stripParsed = null;      // {kind:'jpeg', little, ifd0, exif, gps, segStart, segEnd}
+                              // or {kind:'png', metaChunks:[...]}
+let stripRemoved = new Set(); // set of field keys the user checked for removal
+
+const TIFF_TAG_SIZE = {1:1,2:1,3:2,4:4,5:8,6:1,7:1,8:2,9:4,10:8,11:4,12:8};
+function tiffTypeSize(t){ return TIFF_TAG_SIZE[t] || 1; }
+
+const IFD0_TAGS = {0x010F:'Make',0x0110:'Model',0x0112:'Orientation',0x011A:'X Resolution',
+  0x011B:'Y Resolution',0x0128:'Resolution Unit',0x0131:'Software',0x0132:'Date/Time',
+  0x013B:'Artist',0x8298:'Copyright'};
+const EXIF_TAGS = {0x829A:'Exposure Time',0x829D:'F-Number',0x8822:'Exposure Program',
+  0x8827:'ISO Speed',0x9003:'Date Taken (Original)',0x9004:'Date Digitized',
+  0x9201:'Shutter Speed',0x9202:'Aperture Value',0x9204:'Exposure Bias',
+  0x9205:'Max Aperture',0x9206:'Subject Distance',0x9207:'Metering Mode',
+  0x9208:'Light Source',0x9209:'Flash',0x920A:'Focal Length',0xA002:'Image Width (EXIF)',
+  0xA003:'Image Height (EXIF)',0xA405:'Focal Length (35mm)',0xA406:'Scene Capture Type',
+  0xA430:'Camera Owner',0xA431:'Body Serial Number',0xA432:'Lens Specification',
+  0xA433:'Lens Make',0xA434:'Lens Model'};
+const GPS_TAGS = {0x0001:'GPS Latitude Ref',0x0002:'GPS Latitude',0x0003:'GPS Longitude Ref',
+  0x0004:'GPS Longitude',0x0005:'GPS Altitude Ref',0x0006:'GPS Altitude',
+  0x0007:'GPS Time Stamp',0x001D:'GPS Date Stamp'};
+
+function tagLabel(table, tag){
+  return table[tag] || ('Tag 0x' + tag.toString(16).toUpperCase());
+}
+
+function decodeEntryValue(entry, little){
+  const {type, count, valueBytes} = entry;
+  try{
+    if(type === 2){ // ASCII
+      let s = new TextDecoder('latin1').decode(valueBytes).replace(/\0+$/,'');
+      return s || '(empty)';
+    }
+    if(type === 3 || type === 8){ // SHORT / SSHORT
+      const vals = [];
+      for(let i=0;i<count;i++){
+        const o=i*2;
+        vals.push(little ? (valueBytes[o]|valueBytes[o+1]<<8) : (valueBytes[o]<<8|valueBytes[o+1]));
+      }
+      return vals.join(', ');
+    }
+    if(type === 4 || type === 9){ // LONG / SLONG
+      const vals = [];
+      for(let i=0;i<count;i++){
+        const o=i*4;
+        vals.push(little
+          ? ((valueBytes[o]|valueBytes[o+1]<<8|valueBytes[o+2]<<16|valueBytes[o+3]<<24)>>>0)
+          : ((valueBytes[o]<<24|valueBytes[o+1]<<16|valueBytes[o+2]<<8|valueBytes[o+3])>>>0));
+      }
+      return vals.join(', ');
+    }
+    if(type === 5 || type === 10){ // RATIONAL / SRATIONAL
+      const vals = [];
+      for(let i=0;i<count;i++){
+        const o=i*8;
+        const num = little
+          ? ((valueBytes[o]|valueBytes[o+1]<<8|valueBytes[o+2]<<16|valueBytes[o+3]<<24)>>>0)
+          : ((valueBytes[o]<<24|valueBytes[o+1]<<16|valueBytes[o+2]<<8|valueBytes[o+3])>>>0);
+        const den = little
+          ? ((valueBytes[o+4]|valueBytes[o+5]<<8|valueBytes[o+6]<<16|valueBytes[o+7]<<24)>>>0)
+          : ((valueBytes[o+4]<<24|valueBytes[o+5]<<16|valueBytes[o+6]<<8|valueBytes[o+7])>>>0);
+        vals.push(den ? (num/den).toFixed(Math.abs(num/den) < 1 ? 4 : 2) : '0');
+      }
+      return vals.join(', ');
+    }
+    return '[binary data]';
+  }catch(err){ return '(unreadable)'; }
+}
+
+// Generic TIFF/EXIF reader — works on absolute byte offsets within `bytes`,
+// so it can parse either a JPEG APP1 segment or a PNG eXIf chunk's payload.
+function parseTIFFAt(bytes, tiffStart){
+  const mark = String.fromCharCode(bytes[tiffStart], bytes[tiffStart+1]);
+  const little = mark === 'II';
+  const readU16 = (a)=> little ? (bytes[a]|bytes[a+1]<<8) : (bytes[a]<<8|bytes[a+1]);
+  const readU32 = (a)=> little
+    ? ((bytes[a]|bytes[a+1]<<8|bytes[a+2]<<16|bytes[a+3]<<24)>>>0)
+    : ((bytes[a]<<24|bytes[a+1]<<16|bytes[a+2]<<8|bytes[a+3])>>>0);
+
+  function readIFD(relOffset){
+    const abs = tiffStart + relOffset;
+    if(abs < 0 || abs+2 > bytes.length) return {entries:[]};
+    const count = readU16(abs);
+    const entries = [];
+    for(let i=0;i<count;i++){
+      const entryAbs = abs + 2 + i*12;
+      if(entryAbs+12 > bytes.length) break;
+      const tag = readU16(entryAbs);
+      const type = readU16(entryAbs+2);
+      const cnt = readU32(entryAbs+4);
+      const size = tiffTypeSize(type) * cnt;
+      let valueAbs;
+      if(size <= 4){ valueAbs = entryAbs+8; }
+      else { valueAbs = tiffStart + readU32(entryAbs+8); }
+      let valueBytes;
+      if(valueAbs >= 0 && valueAbs+size <= bytes.length && size < 5000000){
+        valueBytes = bytes.slice(valueAbs, valueAbs+size);
+      } else {
+        valueBytes = new Uint8Array(0);
+      }
+      entries.push({tag, type, count:cnt, valueBytes});
+    }
+    return {entries};
+  }
+
+  const ifd0Offset = readU32(tiffStart+4);
+  const ifd0Full = readIFD(ifd0Offset).entries;
+
+  let exifEntries = [], gpsEntries = [];
+  const exifPtr = ifd0Full.find(e=>e.tag===0x8769 && e.valueBytes.length===4);
+  if(exifPtr){
+    const v = exifPtr.valueBytes;
+    const off = little ? ((v[0]|v[1]<<8|v[2]<<16|v[3]<<24)>>>0) : ((v[0]<<24|v[1]<<16|v[2]<<8|v[3])>>>0);
+    exifEntries = readIFD(off).entries;
+  }
+  const gpsPtr = ifd0Full.find(e=>e.tag===0x8825 && e.valueBytes.length===4);
+  if(gpsPtr){
+    const v = gpsPtr.valueBytes;
+    const off = little ? ((v[0]|v[1]<<8|v[2]<<16|v[3]<<24)>>>0) : ((v[0]<<24|v[1]<<16|v[2]<<8|v[3])>>>0);
+    gpsEntries = readIFD(off).entries;
+  }
+
+  const ifd0 = ifd0Full.filter(e => e.tag !== 0x8769 && e.tag !== 0x8825);
+  return {little, ifd0, exif: exifEntries, gps: gpsEntries};
+}
+
+// Find the JPEG APP1 segment that holds "Exif\0\0" data
+function findJPEGExifSegment(bytes){
+  let offset = 2;
+  while(offset < bytes.length - 4){
+    if(bytes[offset] !== 0xFF) break;
+    const marker = bytes[offset+1];
+    if(marker === 0xD8 || marker === 0x01 || (marker >= 0xD0 && marker <= 0xD7)){ offset += 2; continue; }
+    if(marker === 0xD9 || marker === 0xDA) break;
+    if(offset+4 > bytes.length) break;
+    const length = (bytes[offset+2]<<8) | bytes[offset+3];
+    if(marker === 0xE1){
+      const h = offset+4;
+      if(bytes[h]===0x45 && bytes[h+1]===0x78 && bytes[h+2]===0x69 && bytes[h+3]===0x66 && bytes[h+4]===0 && bytes[h+5]===0){
+        return { segStart: offset, segEnd: offset+2+length, tiffStart: h+6 };
+      }
+    }
+    offset += 2 + length;
+  }
+  return null;
+}
+
+// Rebuild a TIFF/EXIF block (always little-endian) from filtered entry lists
+function buildTIFF(ifd0Entries, exifEntries, gpsEntries){
+  function planIFD(entries, startOffset){
+    const fixedSize = 2 + entries.length*12 + 4;
+    let cursor = startOffset + fixedSize;
+    const placements = entries.map(e=>{
+      const size = e.valueBytes.length;
+      if(size <= 4) return {inline:true, size};
+      const offset = cursor;
+      cursor += size + (size % 2);
+      return {inline:false, offset, size};
+    });
+    return {fixedSize, totalSize: cursor - startOffset, placements};
+  }
+  function writeIFD(entries, placements, patchMap){
+    const fixedSize = 2 + entries.length*12 + 4;
+    const buf = new Uint8Array(fixedSize);
+    const dv = new DataView(buf.buffer);
+    dv.setUint16(0, entries.length, true);
+    const externalParts = [];
+    entries.forEach((e,i)=>{
+      const eo = 2 + i*12;
+      dv.setUint16(eo, e.tag, true);
+      dv.setUint16(eo+2, e.type, true);
+      dv.setUint32(eo+4, e.count, true);
+      const p = placements[i];
+      if(patchMap && patchMap.has(e.tag)){
+        dv.setUint32(eo+8, patchMap.get(e.tag), true);
+      } else if(p.inline){
+        for(let k=0;k<4;k++) buf[eo+8+k] = k < e.valueBytes.length ? e.valueBytes[k] : 0;
+      } else {
+        dv.setUint32(eo+8, p.offset, true);
+        const padded = new Uint8Array(p.size + (p.size % 2));
+        padded.set(e.valueBytes, 0);
+        externalParts.push(padded);
+      }
+    });
+    dv.setUint32(2 + entries.length*12, 0, true); // next IFD offset = none
+    return {fixedBytes: buf, externalBytes: concatBytes(externalParts)};
+  }
+
+  const sortedIfd0 = ifd0Entries.slice().sort((a,b)=>a.tag-b.tag);
+  const sortedExif = exifEntries.slice().sort((a,b)=>a.tag-b.tag);
+  const sortedGps = gpsEntries.slice().sort((a,b)=>a.tag-b.tag);
+
+  const ifd0ForWrite = sortedIfd0.slice();
+  if(sortedExif.length) ifd0ForWrite.push({tag:0x8769, type:4, count:1, valueBytes:new Uint8Array(4)});
+  if(sortedGps.length) ifd0ForWrite.push({tag:0x8825, type:4, count:1, valueBytes:new Uint8Array(4)});
+  ifd0ForWrite.sort((a,b)=>a.tag-b.tag);
+
+  const plan0 = planIFD(ifd0ForWrite, 8);
+  let cursor = 8 + plan0.totalSize;
+
+  let planE = null, exifOffset = 0;
+  if(sortedExif.length){
+    exifOffset = cursor;
+    planE = planIFD(sortedExif, exifOffset);
+    cursor = exifOffset + planE.totalSize;
+  }
+  let planG = null, gpsOffset = 0;
+  if(sortedGps.length){
+    gpsOffset = cursor;
+    planG = planIFD(sortedGps, gpsOffset);
+    cursor = gpsOffset + planG.totalSize;
+  }
+
+  const patchMap = new Map();
+  if(sortedExif.length) patchMap.set(0x8769, exifOffset);
+  if(sortedGps.length) patchMap.set(0x8825, gpsOffset);
+
+  const w0 = writeIFD(ifd0ForWrite, plan0.placements, patchMap);
+  const parts = [];
+  const header = new Uint8Array(8);
+  const hv = new DataView(header.buffer);
+  header[0]=0x49; header[1]=0x49; // 'II'
+  hv.setUint16(2, 42, true);
+  hv.setUint32(4, 8, true);
+  parts.push(header, w0.fixedBytes, w0.externalBytes);
+
+  if(planE){
+    const wE = writeIFD(sortedExif, planE.placements, null);
+    parts.push(wE.fixedBytes, wE.externalBytes);
+  }
+  if(planG){
+    const wG = writeIFD(sortedGps, planG.placements, null);
+    parts.push(wG.fixedBytes, wG.externalBytes);
+  }
+  return concatBytes(parts);
+}
+
+// ---- PNG metadata chunk parsing ----
+const PNG_META_TYPES = ['tEXt','zTXt','iTXt','eXIf','tIME'];
+
+function parsePNGChunksAll(bytes){
+  let offset = 8;
+  const chunks = [];
+  while(offset + 8 <= bytes.length){
+    const len = (bytes[offset]<<24|bytes[offset+1]<<16|bytes[offset+2]<<8|bytes[offset+3])>>>0;
+    const type = String.fromCharCode(bytes[offset+4],bytes[offset+5],bytes[offset+6],bytes[offset+7]);
+    const dataStart = offset+8;
+    const total = 8+len+4;
+    chunks.push({type, start:offset, end:offset+total, dataStart, dataLen:len});
+    if(type === 'IEND' || offset+total > bytes.length) break;
+    offset += total;
+  }
+  return chunks;
+}
+
+function describePNGChunk(bytes, chunk){
+  const data = bytes.slice(chunk.dataStart, chunk.dataStart+chunk.dataLen);
+  if(chunk.type === 'tEXt'){
+    const nullIdx = data.indexOf(0);
+    const keyword = nullIdx >= 0 ? new TextDecoder('latin1').decode(data.slice(0,nullIdx)) : 'Text';
+    const value = nullIdx >= 0 ? new TextDecoder('latin1').decode(data.slice(nullIdx+1)) : '';
+    return {name: 'Text — ' + keyword, value: value.slice(0,120) || '(empty)'};
+  }
+  if(chunk.type === 'zTXt'){
+    const nullIdx = data.indexOf(0);
+    const keyword = nullIdx >= 0 ? new TextDecoder('latin1').decode(data.slice(0,nullIdx)) : 'Text';
+    return {name: 'Text — ' + keyword, value: '(compressed)'};
+  }
+  if(chunk.type === 'iTXt'){
+    const nullIdx = data.indexOf(0);
+    const keyword = nullIdx >= 0 ? new TextDecoder('latin1').decode(data.slice(0,nullIdx)) : 'Text';
+    const compressed = nullIdx >= 0 ? data[nullIdx+1] : 0;
+    return {name: 'International text — ' + keyword, value: compressed ? '(compressed)' : '(text present)'};
+  }
+  if(chunk.type === 'eXIf'){
+    return {name: 'Embedded EXIF data', value: 'Camera / GPS metadata block'};
+  }
+  if(chunk.type === 'tIME'){
+    if(data.length >= 7){
+      const y = (data[0]<<8)|data[1];
+      const mo = data[2], d = data[3], h = data[4], mi = data[5], s = data[6];
+      return {name:'Last Modified', value: y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0')+' '+String(h).padStart(2,'0')+':'+String(mi).padStart(2,'0')+':'+String(s).padStart(2,'0')};
+    }
+    return {name:'Last Modified', value:''};
+  }
+  return {name: chunk.type, value:''};
+}
+
+function parsePNGForMeta(bytes){
+  const allChunks = parsePNGChunksAll(bytes);
+  const metaChunks = allChunks
+    .filter(c => PNG_META_TYPES.includes(c.type))
+    .map((c,i)=>{
+      const d = describePNGChunk(bytes, c);
+      return {key:'png:'+i, start:c.start, end:c.end, name:d.name, value:d.value};
+    });
+  return {metaChunks};
+}
+
+function renderMetaGroup(container, groupTitle, entries, table, prefix, little){
+  if(!entries.length) return;
+  const label = document.createElement('div');
+  label.className = 'group-label';
+  label.textContent = groupTitle;
+  container.appendChild(label);
+  entries.forEach(entry=>{
+    const key = prefix + ':0x' + entry.tag.toString(16);
+    const row = document.createElement('div');
+    row.className = 'meta-row';
+    const text = document.createElement('div');
+    text.className = 'field-text';
+    text.innerHTML = '<div class="field-name">' + tagLabel(table, entry.tag) + '</div>' +
+      '<div class="field-value">' + decodeEntryValue(entry, little) + '</div>';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.dataset.key = key;
+    cb.addEventListener('change', ()=>{
+      if(cb.checked) stripRemoved.add(key); else stripRemoved.delete(key);
+      updateStripSummary();
+    });
+    row.appendChild(text);
+    row.appendChild(cb);
+    container.appendChild(row);
+  });
+}
+
+function updateStripSummary(){
+  const total = document.querySelectorAll('#strip-meta-list input[type=checkbox]').length;
+  document.getElementById('strip-meta-summary').textContent = stripRemoved.size + ' of ' + total + ' selected for removal';
+}
+
+function renderStripMetaUI(){
+  const wrap = document.getElementById('strip-meta-wrap');
+  const listEl = document.getElementById('strip-meta-list');
+  const fallbackNote = document.getElementById('strip-note-fallback');
+  listEl.innerHTML = '';
+  stripRemoved = new Set();
+
+  if(stripParsed.kind === 'jpeg'){
+    const { ifd0, exif, gps, little } = stripParsed;
+    renderMetaGroup(listEl, 'Camera / File info', ifd0, IFD0_TAGS, 'exif:ifd0', little);
+    renderMetaGroup(listEl, 'Shooting details', exif, EXIF_TAGS, 'exif:exif', little);
+    renderMetaGroup(listEl, 'GPS location', gps, GPS_TAGS, 'exif:gps', little);
+    const totalFields = ifd0.length + exif.length + gps.length;
+    if(totalFields === 0){
+      listEl.innerHTML = '<p class="note">No EXIF fields were found in this file.</p>';
+      wrap.style.display = 'block';
+      fallbackNote.style.display = 'block';
+      document.getElementById('btn-strip').disabled = true;
+    } else {
+      wrap.style.display = 'block';
+      fallbackNote.style.display = 'block';
+      document.getElementById('btn-strip').disabled = false;
+    }
+  } else if(stripParsed.kind === 'png'){
+    const { metaChunks } = stripParsed;
+    if(!metaChunks.length){
+      listEl.innerHTML = '<p class="note">No metadata chunks were found in this file.</p>';
+      wrap.style.display = 'block';
+      fallbackNote.style.display = 'block';
+      document.getElementById('btn-strip').disabled = true;
+    } else {
+      const label = document.createElement('div');
+      label.className = 'group-label';
+      label.textContent = 'PNG metadata';
+      listEl.appendChild(label);
+      metaChunks.forEach(chunk=>{
+        const row = document.createElement('div');
+        row.className = 'meta-row';
+        const text = document.createElement('div');
+        text.className = 'field-text';
+        text.innerHTML = '<div class="field-name">' + chunk.name + '</div>' +
+          '<div class="field-value">' + chunk.value + '</div>';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.dataset.key = chunk.key;
+        cb.addEventListener('change', ()=>{
+          if(cb.checked) stripRemoved.add(chunk.key); else stripRemoved.delete(chunk.key);
+          updateStripSummary();
+        });
+        row.appendChild(text);
+        row.appendChild(cb);
+        listEl.appendChild(row);
+      });
+      wrap.style.display = 'block';
+      fallbackNote.style.display = 'block';
+      document.getElementById('btn-strip').disabled = false;
+    }
+  } else {
+    // WEBP or unsupported: no granular list, only the fallback path
+    wrap.style.display = 'none';
+    fallbackNote.style.display = 'block';
+    document.getElementById('btn-strip').disabled = true;
+  }
+  updateStripSummary();
+}
+
+document.getElementById('strip-select-all').addEventListener('click', (e)=>{
+  e.preventDefault();
+  const boxes = document.querySelectorAll('#strip-meta-list input[type=checkbox]');
+  const allChecked = Array.from(boxes).every(b=>b.checked);
+  boxes.forEach(b=>{
+    b.checked = !allChecked;
+    if(b.checked) stripRemoved.add(b.dataset.key); else stripRemoved.delete(b.dataset.key);
+  });
+  updateStripSummary();
+});
+
+document.getElementById('file-strip').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const {img} = await loadImageFromFile(file);
+  stripState = {file, img};
+  document.getElementById('drop-strip').classList.add('has-file');
+  document.getElementById('drop-strip-label').textContent = 'Change image';
+  setupPreview('strip', file, img);
+  document.getElementById('download-strip').classList.remove('show');
+  document.getElementById('status-strip').textContent = '';
+  document.getElementById('strip-sizes').style.display = 'flex';
+  document.getElementById('strip-size-before').textContent = fmtBytes(file.size);
+  document.getElementById('strip-size-after').textContent = '–';
+
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+
+  try{
+    if(file.type === 'image/jpeg'){
+      const seg = findJPEGExifSegment(bytes);
+      if(seg){
+        const tiff = parseTIFFAt(bytes, seg.tiffStart);
+        stripParsed = { kind:'jpeg', little: tiff.little, ifd0: tiff.ifd0, exif: tiff.exif, gps: tiff.gps,
+          segStart: seg.segStart, segEnd: seg.segEnd };
+      } else {
+        stripParsed = { kind:'jpeg', little:true, ifd0:[], exif:[], gps:[], segStart:-1, segEnd:-1 };
+      }
+    } else if(file.type === 'image/png'){
+      stripParsed = Object.assign({kind:'png'}, parsePNGForMeta(bytes));
+    } else {
+      stripParsed = { kind:'webp' };
+    }
+  }catch(err){
+    stripParsed = { kind:'error' };
+  }
+
+  renderStripMetaUI();
+});
+
+async function reencodeFallbackStrip(){
+  const { img, file } = stripState;
+  const outType = (file.type === 'image/jpeg' || file.type === 'image/webp') ? file.type : 'image/png';
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  if(outType === 'image/jpeg'){
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  ctx.drawImage(img,0,0);
+  const blob = await new Promise(res => canvas.toBlob(res, outType, 0.95));
+  const ext = outType === 'image/jpeg' ? 'jpg' : outType === 'image/webp' ? 'webp' : 'png';
+  finishStripDownload(blob, ext, 'Done — all metadata removed (re-encoded).');
+}
+
+function finishStripDownload(blob, ext, message){
+  const baseName = stripState.file.name.replace(/\.[^.]+$/,'');
+  const url = URL.createObjectURL(blob);
+  const link = document.getElementById('download-strip');
+  link.href = url;
+  link.download = outputFileName(document.getElementById('strip-filename').value, baseName, '-clean', ext);
+  link.classList.add('show');
+  link.textContent = 'Download ' + link.download + ' (' + fmtBytes(blob.size) + ')';
+  document.getElementById('strip-size-after').textContent = fmtBytes(blob.size);
+  document.getElementById('status-strip').textContent = message;
+}
+
+document.getElementById('strip-fallback-link').addEventListener('click', async (e)=>{
+  e.preventDefault();
+  if(!stripState) return;
+  document.getElementById('status-strip').textContent = 'Re-encoding…';
+  await reencodeFallbackStrip();
+});
+
+document.getElementById('btn-strip').addEventListener('click', async ()=>{
+  if(!stripState || !stripParsed) return;
+  const statusEl = document.getElementById('status-strip');
+
+  if(stripRemoved.size === 0){
+    statusEl.textContent = 'Check at least one field to remove, or use the re-encode option below.';
+    return;
+  }
+  statusEl.textContent = 'Removing selected fields…';
+
+  const { file } = stripState;
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+
+  if(stripParsed.kind === 'jpeg'){
+    const keep = (list, groupKey) => list.filter(e => !stripRemoved.has(groupKey + ':0x' + e.tag.toString(16)));
+    const ifd0Final = keep(stripParsed.ifd0, 'exif:ifd0');
+    const exifFinal = keep(stripParsed.exif, 'exif:exif');
+    const gpsFinal = keep(stripParsed.gps, 'exif:gps');
+
+    if(stripParsed.segStart < 0){
+      statusEl.textContent = 'No EXIF segment found to edit.';
+      return;
+    }
+
+    let newBytes;
+    if(ifd0Final.length === 0 && exifFinal.length === 0 && gpsFinal.length === 0){
+      // nothing left — remove the whole APP1 Exif segment
+      newBytes = concatBytes([bytes.slice(0, stripParsed.segStart), bytes.slice(stripParsed.segEnd)]);
+    } else {
+      const tiff = buildTIFF(ifd0Final, exifFinal, gpsFinal);
+      const exifHeader = new TextEncoder().encode('Exif\0\0');
+      const segData = concatBytes([exifHeader, tiff]);
+      const segLen = segData.length + 2;
+      const lenBytes = new Uint8Array([(segLen>>8)&255, segLen&255]);
+      const newSeg = concatBytes([new Uint8Array([0xFF,0xE1]), lenBytes, segData]);
+      newBytes = concatBytes([bytes.slice(0, stripParsed.segStart), newSeg, bytes.slice(stripParsed.segEnd)]);
+    }
+
+    const blob = new Blob([newBytes], {type:'image/jpeg'});
+    finishStripDownload(blob, 'jpg', 'Done — removed ' + stripRemoved.size + ' field' + (stripRemoved.size>1?'s':'') + '.');
+
+  } else if(stripParsed.kind === 'png'){
+    const removeRanges = stripParsed.metaChunks
+      .filter(c => stripRemoved.has(c.key))
+      .map(c => [c.start, c.end])
+      .sort((a,b)=>a[0]-b[0]);
+    const parts = [];
+    let cursor = 0;
+    removeRanges.forEach(([s,e])=>{ parts.push(bytes.slice(cursor,s)); cursor = e; });
+    parts.push(bytes.slice(cursor));
+    const newBytes = concatBytes(parts);
+    const blob = new Blob([newBytes], {type:'image/png'});
+    finishStripDownload(blob, 'png', 'Done — removed ' + stripRemoved.size + ' field' + (stripRemoved.size>1?'s':'') + '.');
+  }
+});
+
+/* =========================================================
+   WATERMARK
+   ========================================================= */
+let watermarkState = null;
+let watermarkMultiState = null;
+let watermarkMode = 'single';
+
+document.querySelectorAll('.mode-btn[data-group="watermark"]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.mode-btn[data-group="watermark"]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    watermarkMode = btn.dataset.mode;
+
+    document.getElementById('watermark-mode-single').style.display = watermarkMode === 'single' ? 'block' : 'none';
+    document.getElementById('watermark-mode-multi').style.display = watermarkMode === 'multi' ? 'block' : 'none';
+    document.getElementById('btn-watermark').textContent = watermarkMode === 'single' ? 'Add watermark' : 'Add to all';
+    document.getElementById('btn-watermark').disabled = watermarkMode === 'single'
+      ? !watermarkState
+      : !(watermarkMultiState && watermarkMultiState.length);
+
+    document.getElementById('download-watermark').classList.remove('show');
+    document.getElementById('result-watermark').classList.remove('show');
+    document.getElementById('watermark-multi-results').style.display = 'none';
+    document.getElementById('status-watermark').textContent = '';
+  });
+});
+
+document.getElementById('file-watermark').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const {img} = await loadImageFromFile(file);
+  watermarkState = {file, img};
+  document.getElementById('drop-watermark').classList.add('has-file');
+  document.getElementById('drop-watermark-label').textContent = 'Change image';
+  setupPreview('watermark', file, img);
+  document.getElementById('btn-watermark').disabled = false;
+  document.getElementById('download-watermark').classList.remove('show');
+  document.getElementById('result-watermark').classList.remove('show');
+  document.getElementById('status-watermark').textContent = '';
+});
+
+const MAX_WATERMARK_MULTI_FILES = 30;
+
+document.getElementById('file-watermark-multi').addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files || []);
+  if(!files.length) return;
+  const limited = files.slice(0, MAX_WATERMARK_MULTI_FILES);
+
+  const loaded = await Promise.all(limited.map(async (f)=>{
+    const {img} = await loadImageFromFile(f);
+    return {file: f, img};
+  }));
+  watermarkMultiState = loaded;
+
+  document.getElementById('drop-watermark-multi').classList.add('has-file');
+  document.getElementById('drop-watermark-multi-label').textContent =
+    loaded.length + ' photo' + (loaded.length > 1 ? 's' : '') + ' selected — tap to change';
+
+  const listEl = document.getElementById('watermark-multi-list');
+  listEl.innerHTML = '';
+  loaded.forEach(({file, img})=>{
+    const row = document.createElement('div');
+    row.className = 'multi-item';
+    const thumb = document.createElement('img');
+    thumb.src = img.src;
+    const info = document.createElement('div');
+    info.className = 'info';
+    info.innerHTML = '<strong>' + file.name + '</strong><br>' + fmtBytes(file.size);
+    row.appendChild(thumb);
+    row.appendChild(info);
+    listEl.appendChild(row);
+  });
+
+  document.getElementById('btn-watermark').disabled = false;
+  document.getElementById('watermark-multi-results').style.display = 'none';
+  document.getElementById('download-watermark-zip').classList.remove('show');
+  document.getElementById('status-watermark').textContent = files.length > MAX_WATERMARK_MULTI_FILES
+    ? ('Only the first ' + MAX_WATERMARK_MULTI_FILES + ' photos were loaded.')
+    : '';
+});
+
+// Draw the watermark for one image and return an encoded Blob (shared by single + batch)
+async function applyWatermarkToBlob(img, text, position, size, opacity, outType){
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  if(outType === 'image/jpeg'){
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  ctx.drawImage(img,0,0);
+
+  const padding = Math.max(12, size * 0.3);
+  let x, y, align, baseline;
+  if(position === 'bottom-right'){ x = canvas.width - padding; y = canvas.height - padding; align='right'; baseline='bottom'; }
+  else if(position === 'bottom-left'){ x = padding; y = canvas.height - padding; align='left'; baseline='bottom'; }
+  else if(position === 'top-right'){ x = canvas.width - padding; y = padding; align='right'; baseline='top'; }
+  else if(position === 'top-left'){ x = padding; y = padding; align='left'; baseline='top'; }
+  else { x = canvas.width/2; y = canvas.height/2; align='center'; baseline='middle'; }
+
+  ctx.font = '700 ' + size + 'px Inter, sans-serif';
+  ctx.textAlign = align;
+  ctx.textBaseline = baseline;
+  ctx.globalAlpha = opacity;
+  ctx.lineWidth = Math.max(1, size * 0.08);
+  ctx.strokeStyle = 'rgba(0,0,0,0.65)';
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText(text, x, y);
+  ctx.globalAlpha = 1;
+
+  return await encodeCanvasToBlob(canvas, outType);
+}
+
+document.getElementById('btn-watermark').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('status-watermark');
+  const text = document.getElementById('watermark-text').value || '';
+  const position = document.getElementById('watermark-position').value;
+  const size = Math.min(400, Math.max(8, parseInt(document.getElementById('watermark-size').value,10) || 32));
+  const opacity = Math.min(100, Math.max(5, parseInt(document.getElementById('watermark-opacity').value,10) || 60)) / 100;
+  const outType = document.getElementById('watermark-format').value;
+  const ext = extForType(outType);
+  const customName = document.getElementById('watermark-filename').value;
+
+  if(watermarkMode === 'multi'){
+    if(!watermarkMultiState || !watermarkMultiState.length) return;
+    statusEl.textContent = 'Watermarking ' + watermarkMultiState.length + ' photos…';
+    document.getElementById('btn-watermark').disabled = true;
+
+    const results = [];
+    for(let i=0;i<watermarkMultiState.length;i++){
+      const { file, img } = watermarkMultiState[i];
+      try{
+        const blob = await applyWatermarkToBlob(img, text, position, size, opacity, outType);
+        if(blob){
+          const baseName = file.name.replace(/\.[^.]+$/,'');
+          const name = outputBatchFileName(customName, baseName, i+1, '-watermarked', ext);
+          results.push({name, blob});
+        }
+      }catch(err){ /* skip this file, keep going */ }
+    }
+
+    const listEl = document.getElementById('watermark-multi-result-list');
+    listEl.innerHTML = '';
+    results.forEach(r=>{
+      const url = URL.createObjectURL(r.blob);
+      const row = document.createElement('div');
+      row.className = 'multi-item';
+      const info = document.createElement('div');
+      info.className = 'info';
+      info.innerHTML = '<strong>' + r.name + '</strong><br>' + fmtBytes(r.blob.size);
+      const a = document.createElement('a');
+      a.href = url; a.download = r.name; a.textContent = 'Download';
+      row.appendChild(info);
+      row.appendChild(a);
+      listEl.appendChild(row);
+    });
+    document.getElementById('watermark-multi-results').style.display = 'block';
+
+    if(results.length){
+      const entries = await Promise.all(results.map(async r => ({
+        name: r.name,
+        data: new Uint8Array(await r.blob.arrayBuffer())
+      })));
+      const zipBlob = buildZip(entries);
+      const zipLink = document.getElementById('download-watermark-zip');
+      zipLink.href = URL.createObjectURL(zipBlob);
+      zipLink.download = outputZipName(customName, 'watermarked-images');
+      zipLink.classList.add('show');
+      zipLink.textContent = 'Download all as ZIP (' + fmtBytes(zipBlob.size) + ')';
+    }
+
+    statusEl.textContent = 'Done — watermarked ' + results.length + ' of ' + watermarkMultiState.length + ' photos.';
+    document.getElementById('btn-watermark').disabled = false;
+    return;
+  }
+
+  // ---- single image mode ----
+  if(!watermarkState) return;
+  statusEl.textContent = 'Adding watermark…';
+  const { img, file } = watermarkState;
+  const baseName = file.name.replace(/\.[^.]+$/,'');
+  const blob = await applyWatermarkToBlob(img, text, position, size, opacity, outType);
+  if(!blob){ statusEl.textContent = 'Something went wrong — try a different image.'; return; }
+  const url = URL.createObjectURL(blob);
+  document.getElementById('result-watermark-img').src = url;
+  document.getElementById('result-watermark').classList.add('show');
+  const link = document.getElementById('download-watermark');
+  link.href = url;
+  link.download = outputFileName(customName, baseName, '-watermarked', ext);
+  link.classList.add('show');
+  link.textContent = 'Download ' + link.download + ' (' + fmtBytes(blob.size) + ')';
+  statusEl.textContent = 'Done.';
+});
+
+/* =========================================================
+   BASIC FILTERS
+   ========================================================= */
+let filtersState = null;
+
+function clamp255(v){ return Math.max(0, Math.min(255, v)); }
+
+function applyPixelFilters(imageData, width, height, effect, brightness, contrast){
+  const d = imageData.data;
+  const c = contrast * 2.55; // map -100..100 to roughly -255..255
+  const factor = (259 * (c + 255)) / (255 * (259 - c));
+
+  for(let i=0;i<d.length;i+=4){
+    let r = d[i], g = d[i+1], b = d[i+2];
+    r += brightness; g += brightness; b += brightness;
+    r = factor*(r-128)+128;
+    g = factor*(g-128)+128;
+    b = factor*(b-128)+128;
+
+    switch(effect){
+      case 'grayscale': {
+        const avg = 0.299*r + 0.587*g + 0.114*b;
+        r = g = b = avg;
+        break;
+      }
+      case 'sepia': {
+        const tr = 0.393*r + 0.769*g + 0.189*b;
+        const tg = 0.349*r + 0.686*g + 0.168*b;
+        const tb = 0.272*r + 0.534*g + 0.131*b;
+        r = tr; g = tg; b = tb;
+        break;
+      }
+      case 'invert':
+        r = 255-r; g = 255-g; b = 255-b;
+        break;
+      case 'vintage':
+        r = r*1.07 + 8; g = g*0.98 + 4; b = b*0.82;
+        break;
+      case 'warm':
+        r += 18; g += 8; b -= 14;
+        break;
+      case 'cool':
+        r -= 12; b += 18;
+        break;
+      case 'posterize': {
+        const levels = 5, step = 255/(levels-1);
+        r = Math.round(Math.round(r/step)*step);
+        g = Math.round(Math.round(g/step)*step);
+        b = Math.round(Math.round(b/step)*step);
+        break;
+      }
+      case 'threshold': {
+        const avg = 0.299*r + 0.587*g + 0.114*b;
+        const v = avg > 128 ? 255 : 0;
+        r = g = b = v;
+        break;
+      }
+    }
+    d[i] = clamp255(r); d[i+1] = clamp255(g); d[i+2] = clamp255(b);
+  }
+
+  if(effect === 'vignette') applyVignette(imageData, width, height);
+  else if(effect === 'blur') applyBoxBlur(imageData, width, height);
+  else if(effect === 'sharpen') applySharpen(imageData, width, height);
+
+  return imageData;
+}
+
+function applyVignette(imageData, width, height){
+  const d = imageData.data;
+  const cx = width/2, cy = height/2;
+  const maxDist = Math.sqrt(cx*cx + cy*cy);
+  for(let y=0;y<height;y++){
+    for(let x=0;x<width;x++){
+      const idx = (y*width+x)*4;
+      const dx = x-cx, dy = y-cy;
+      const dist = Math.sqrt(dx*dx+dy*dy) / maxDist;
+      const darken = 1 - Math.pow(dist, 2) * 0.6;
+      d[idx] = clamp255(d[idx]*darken);
+      d[idx+1] = clamp255(d[idx+1]*darken);
+      d[idx+2] = clamp255(d[idx+2]*darken);
+    }
+  }
+}
+
+function applyBoxBlur(imageData, width, height){
+  const src = new Uint8ClampedArray(imageData.data);
+  const d = imageData.data;
+  const r = 1; // 3x3 box
+  for(let y=0;y<height;y++){
+    for(let x=0;x<width;x++){
+      let sr=0, sg=0, sb=0, count=0;
+      for(let dy=-r;dy<=r;dy++){
+        for(let dx=-r;dx<=r;dx++){
+          const nx=x+dx, ny=y+dy;
+          if(nx>=0 && nx<width && ny>=0 && ny<height){
+            const idx=(ny*width+nx)*4;
+            sr+=src[idx]; sg+=src[idx+1]; sb+=src[idx+2];
+            count++;
+          }
+        }
+      }
+      const idx=(y*width+x)*4;
+      d[idx]=sr/count; d[idx+1]=sg/count; d[idx+2]=sb/count;
+    }
+  }
+}
+
+function applySharpen(imageData, width, height){
+  const src = new Uint8ClampedArray(imageData.data);
+  const d = imageData.data;
+  const kernel = [0,-1,0, -1,5,-1, 0,-1,0];
+  for(let y=0;y<height;y++){
+    for(let x=0;x<width;x++){
+      let sr=0, sg=0, sb=0, k=0;
+      for(let dy=-1;dy<=1;dy++){
+        for(let dx=-1;dx<=1;dx++){
+          const nx = Math.min(width-1, Math.max(0, x+dx));
+          const ny = Math.min(height-1, Math.max(0, y+dy));
+          const idx = (ny*width+nx)*4;
+          const wgt = kernel[k++];
+          sr += src[idx]*wgt; sg += src[idx+1]*wgt; sb += src[idx+2]*wgt;
+        }
+      }
+      const idx=(y*width+x)*4;
+      d[idx]=clamp255(sr); d[idx+1]=clamp255(sg); d[idx+2]=clamp255(sb);
+    }
+  }
+}
+
+let filtersMultiState = null;
+let filtersMode = 'single';
+
+document.querySelectorAll('.mode-btn[data-group="filters"]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.mode-btn[data-group="filters"]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    filtersMode = btn.dataset.mode;
+
+    document.getElementById('filters-mode-single').style.display = filtersMode === 'single' ? 'block' : 'none';
+    document.getElementById('filters-mode-multi').style.display = filtersMode === 'multi' ? 'block' : 'none';
+    document.getElementById('btn-filters').textContent = filtersMode === 'single' ? 'Apply filters' : 'Apply to all';
+    document.getElementById('btn-filters').disabled = filtersMode === 'single'
+      ? !filtersState
+      : !(filtersMultiState && filtersMultiState.length);
+
+    document.getElementById('download-filters').classList.remove('show');
+    document.getElementById('result-filters').classList.remove('show');
+    document.getElementById('filters-multi-results').style.display = 'none';
+    document.getElementById('status-filters').textContent = '';
+  });
+});
+
+document.getElementById('file-filters').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const {img} = await loadImageFromFile(file);
+  filtersState = {file, img};
+  document.getElementById('drop-filters').classList.add('has-file');
+  document.getElementById('drop-filters-label').textContent = 'Change image';
+  setupPreview('filters', file, img);
+  document.getElementById('btn-filters').disabled = false;
+  document.getElementById('download-filters').classList.remove('show');
+  document.getElementById('result-filters').classList.remove('show');
+  document.getElementById('status-filters').textContent = '';
+});
+
+const MAX_FILTERS_MULTI_FILES = 30;
+
+document.getElementById('file-filters-multi').addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files || []);
+  if(!files.length) return;
+  const limited = files.slice(0, MAX_FILTERS_MULTI_FILES);
+
+  const loaded = await Promise.all(limited.map(async (f)=>{
+    const {img} = await loadImageFromFile(f);
+    return {file: f, img};
+  }));
+  filtersMultiState = loaded;
+
+  document.getElementById('drop-filters-multi').classList.add('has-file');
+  document.getElementById('drop-filters-multi-label').textContent =
+    loaded.length + ' photo' + (loaded.length > 1 ? 's' : '') + ' selected — tap to change';
+
+  const listEl = document.getElementById('filters-multi-list');
+  listEl.innerHTML = '';
+  loaded.forEach(({file, img})=>{
+    const row = document.createElement('div');
+    row.className = 'multi-item';
+    const thumb = document.createElement('img');
+    thumb.src = img.src;
+    const info = document.createElement('div');
+    info.className = 'info';
+    info.innerHTML = '<strong>' + file.name + '</strong><br>' + fmtBytes(file.size);
+    row.appendChild(thumb);
+    row.appendChild(info);
+    listEl.appendChild(row);
+  });
+
+  document.getElementById('btn-filters').disabled = false;
+  document.getElementById('filters-multi-results').style.display = 'none';
+  document.getElementById('download-filters-zip').classList.remove('show');
+  document.getElementById('status-filters').textContent = files.length > MAX_FILTERS_MULTI_FILES
+    ? ('Only the first ' + MAX_FILTERS_MULTI_FILES + ' photos were loaded.')
+    : '';
+});
+
+// Apply the selected effect/brightness/contrast to one image and return an encoded Blob
+async function applyFiltersToBlob(img, effect, brightness, contrast, outType){
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  if(outType === 'image/jpeg'){
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  ctx.drawImage(img,0,0);
+
+  const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  applyPixelFilters(imageData, canvas.width, canvas.height, effect, brightness, contrast);
+  ctx.putImageData(imageData, 0, 0);
+
+  return await encodeCanvasToBlob(canvas, outType);
+}
+
+document.getElementById('btn-filters').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('status-filters');
+  const effect = document.getElementById('filter-effect').value;
+  const brightness = Math.min(100, Math.max(-100, parseInt(document.getElementById('filter-brightness').value,10) || 0));
+  const contrast = Math.min(100, Math.max(-100, parseInt(document.getElementById('filter-contrast').value,10) || 0));
+  const outType = document.getElementById('filter-format').value;
+  const ext = extForType(outType);
+  const customName = document.getElementById('filters-filename').value;
+
+  if(filtersMode === 'multi'){
+    if(!filtersMultiState || !filtersMultiState.length) return;
+    statusEl.textContent = 'Applying filters to ' + filtersMultiState.length + ' photos…';
+    document.getElementById('btn-filters').disabled = true;
+
+    const results = [];
+    for(let i=0;i<filtersMultiState.length;i++){
+      const { file, img } = filtersMultiState[i];
+      try{
+        const blob = await applyFiltersToBlob(img, effect, brightness, contrast, outType);
+        if(blob){
+          const baseName = file.name.replace(/\.[^.]+$/,'');
+          const name = outputBatchFileName(customName, baseName, i+1, '-filtered', ext);
+          results.push({name, blob});
+        }
+      }catch(err){ /* skip this file, keep going */ }
+    }
+
+    const listEl = document.getElementById('filters-multi-result-list');
+    listEl.innerHTML = '';
+    results.forEach(r=>{
+      const url = URL.createObjectURL(r.blob);
+      const row = document.createElement('div');
+      row.className = 'multi-item';
+      const info = document.createElement('div');
+      info.className = 'info';
+      info.innerHTML = '<strong>' + r.name + '</strong><br>' + fmtBytes(r.blob.size);
+      const a = document.createElement('a');
+      a.href = url; a.download = r.name; a.textContent = 'Download';
+      row.appendChild(info);
+      row.appendChild(a);
+      listEl.appendChild(row);
+    });
+    document.getElementById('filters-multi-results').style.display = 'block';
+
+    if(results.length){
+      const entries = await Promise.all(results.map(async r => ({
+        name: r.name,
+        data: new Uint8Array(await r.blob.arrayBuffer())
+      })));
+      const zipBlob = buildZip(entries);
+      const zipLink = document.getElementById('download-filters-zip');
+      zipLink.href = URL.createObjectURL(zipBlob);
+      zipLink.download = outputZipName(customName, 'filtered-images');
+      zipLink.classList.add('show');
+      zipLink.textContent = 'Download all as ZIP (' + fmtBytes(zipBlob.size) + ')';
+    }
+
+    statusEl.textContent = 'Done — filtered ' + results.length + ' of ' + filtersMultiState.length + ' photos.';
+    document.getElementById('btn-filters').disabled = false;
+    return;
+  }
+
+  // ---- single image mode ----
+  if(!filtersState) return;
+  statusEl.textContent = 'Applying filters…';
+  const { img, file } = filtersState;
+  const baseName = file.name.replace(/\.[^.]+$/,'');
+  const blob = await applyFiltersToBlob(img, effect, brightness, contrast, outType);
+  if(!blob){ statusEl.textContent = 'Something went wrong — try a different image.'; return; }
+  const url = URL.createObjectURL(blob);
+  document.getElementById('result-filters-img').src = url;
+  document.getElementById('result-filters').classList.add('show');
+  const link = document.getElementById('download-filters');
+  link.href = url;
+  link.download = outputFileName(customName, baseName, '-filtered', ext);
+  link.classList.add('show');
+  link.textContent = 'Download ' + link.download + ' (' + fmtBytes(blob.size) + ')';
+  statusEl.textContent = 'Done.';
+});
+
+/* =========================================================
+   ROTATE & FLIP
+   ========================================================= */
+let rotateState = null;
+let rotateMultiState = null;
+let rotateMode = 'single';
+
+document.querySelectorAll('.mode-btn[data-group="rotate"]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.mode-btn[data-group="rotate"]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    rotateMode = btn.dataset.mode;
+
+    document.getElementById('rotate-mode-single').style.display = rotateMode === 'single' ? 'block' : 'none';
+    document.getElementById('rotate-mode-multi').style.display = rotateMode === 'multi' ? 'block' : 'none';
+    document.getElementById('btn-rotate').textContent = rotateMode === 'single' ? 'Apply' : 'Apply to all';
+    document.getElementById('btn-rotate').disabled = rotateMode === 'single'
+      ? !rotateState
+      : !(rotateMultiState && rotateMultiState.length);
+
+    document.getElementById('download-rotate').classList.remove('show');
+    document.getElementById('rotate-multi-results').style.display = 'none';
+    document.getElementById('status-rotate').textContent = '';
+  });
+});
+
+document.getElementById('file-rotate').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const {img} = await loadImageFromFile(file);
+  rotateState = {file, img};
+  document.getElementById('drop-rotate').classList.add('has-file');
+  document.getElementById('drop-rotate-label').textContent = 'Change image';
+  setupPreview('rotate', file, img);
+  document.getElementById('btn-rotate').disabled = false;
+  document.getElementById('download-rotate').classList.remove('show');
+  document.getElementById('status-rotate').textContent = '';
+});
+
+const MAX_ROTATE_MULTI_FILES = 30;
+
+document.getElementById('file-rotate-multi').addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files || []);
+  if(!files.length) return;
+  const limited = files.slice(0, MAX_ROTATE_MULTI_FILES);
+
+  const loaded = await Promise.all(limited.map(async (f)=>{
+    const {img} = await loadImageFromFile(f);
+    return {file: f, img};
+  }));
+  rotateMultiState = loaded;
+
+  document.getElementById('drop-rotate-multi').classList.add('has-file');
+  document.getElementById('drop-rotate-multi-label').textContent =
+    loaded.length + ' photo' + (loaded.length > 1 ? 's' : '') + ' selected — tap to change';
+
+  const listEl = document.getElementById('rotate-multi-list');
+  listEl.innerHTML = '';
+  loaded.forEach(({file, img})=>{
+    const row = document.createElement('div');
+    row.className = 'multi-item';
+    const thumb = document.createElement('img');
+    thumb.src = img.src;
+    const info = document.createElement('div');
+    info.className = 'info';
+    info.innerHTML = '<strong>' + file.name + '</strong><br>' + fmtBytes(file.size);
+    row.appendChild(thumb);
+    row.appendChild(info);
+    listEl.appendChild(row);
+  });
+
+  document.getElementById('btn-rotate').disabled = false;
+  document.getElementById('rotate-multi-results').style.display = 'none';
+  document.getElementById('download-rotate-zip').classList.remove('show');
+  document.getElementById('status-rotate').textContent = files.length > MAX_ROTATE_MULTI_FILES
+    ? ('Only the first ' + MAX_ROTATE_MULTI_FILES + ' photos were loaded.')
+    : '';
+});
+
+document.getElementById('btn-rotate').addEventListener('click', async ()=>{
+  const statusEl = document.getElementById('status-rotate');
+  const rotation = parseInt(document.getElementById('rotate-angle').value, 10) || 0;
+  const mirror = document.getElementById('rotate-mirror').value;
+  const flipH = (mirror === 'h' || mirror === 'both');
+  const flipV = (mirror === 'v' || mirror === 'both');
+  const targetType = document.getElementById('rotate-format').value;
+  const ext = extForType(targetType);
+  const customName = document.getElementById('rotate-filename').value;
+
+  if(rotateMode === 'multi'){
+    if(!rotateMultiState || !rotateMultiState.length) return;
+    statusEl.textContent = 'Processing ' + rotateMultiState.length + ' photos…';
+    document.getElementById('btn-rotate').disabled = true;
+
+    const results = [];
+    for(let i=0;i<rotateMultiState.length;i++){
+      const { file, img } = rotateMultiState[i];
+      try{
+        const blob = await transformImageToBlob(img, targetType, rotation, flipH, flipV);
+        if(blob){
+          const baseName = file.name.replace(/\.[^.]+$/,'');
+          const name = outputBatchFileName(customName, baseName, i+1, '-edited', ext);
+          results.push({name, blob});
+        }
+      }catch(err){ /* skip this file, keep going */ }
+    }
+
+    const listEl = document.getElementById('rotate-multi-result-list');
+    listEl.innerHTML = '';
+    results.forEach(r=>{
+      const url = URL.createObjectURL(r.blob);
+      const row = document.createElement('div');
+      row.className = 'multi-item';
+      const info = document.createElement('div');
+      info.className = 'info';
+      info.innerHTML = '<strong>' + r.name + '</strong><br>' + fmtBytes(r.blob.size);
+      const a = document.createElement('a');
+      a.href = url; a.download = r.name; a.textContent = 'Download';
+      row.appendChild(info);
+      row.appendChild(a);
+      listEl.appendChild(row);
+    });
+    document.getElementById('rotate-multi-results').style.display = 'block';
+
+    if(results.length){
+      const entries = await Promise.all(results.map(async r => ({
+        name: r.name,
+        data: new Uint8Array(await r.blob.arrayBuffer())
+      })));
+      const zipBlob = buildZip(entries);
+      const zipLink = document.getElementById('download-rotate-zip');
+      zipLink.href = URL.createObjectURL(zipBlob);
+      zipLink.download = outputZipName(customName, 'rotated-images');
+      zipLink.classList.add('show');
+      zipLink.textContent = 'Download all as ZIP (' + fmtBytes(zipBlob.size) + ')';
+    }
+
+    statusEl.textContent = 'Done — processed ' + results.length + ' of ' + rotateMultiState.length + ' photos.';
+    document.getElementById('btn-rotate').disabled = false;
+    return;
+  }
+
+  // ---- single image mode ----
+  if(!rotateState) return;
+  statusEl.textContent = 'Processing…';
+  const { img, file } = rotateState;
+  const baseName = file.name.replace(/\.[^.]+$/,'');
+  const blob = await transformImageToBlob(img, targetType, rotation, flipH, flipV);
+  if(!blob){ statusEl.textContent = 'Something went wrong — try a different image.'; return; }
+  const url = URL.createObjectURL(blob);
+  const link = document.getElementById('download-rotate');
+  link.href = url;
+  link.download = outputFileName(customName, baseName, '-edited', ext);
+  link.classList.add('show');
+  link.textContent = 'Download ' + link.download + ' (' + fmtBytes(blob.size) + ')';
+  statusEl.textContent = 'Done.';
+});
+</script>
+</body>
+</html>
